@@ -10,9 +10,9 @@ from test.common.sftp.mirrorer_test import TestMirrorerBase
 These tests require a running local SFTP server, configured in src.test.common.config
   The unit tests expect to be able to write directly to the test directories.
   This should be fully automated by restart_container()
-  
+
   To run one by hand with the Docker CLI:
-    Run an SFTP server 
+    Run an SFTP server
       - on port 2022
       - mounting the home directory to /Users/mitchell.ludwig/dev/sftping/src/test/_sftp/
       - Username: foo

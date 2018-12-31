@@ -40,4 +40,3 @@ class LogLevelAction(argparse.Action):
             log_level = logging.DEBUG
         setattr(namespace, "log_level", count)
         set_log_level(log_level)
-

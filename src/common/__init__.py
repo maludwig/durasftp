@@ -18,6 +18,7 @@ def empty_dir(local_path):
         else:
             remove(entry.path)
 
+
 def generate_file_sha1(fetch_file_path, blocksize=2 ** 16):
     m = hashlib.sha1()
     with open(fetch_file_path, "rb") as f:
@@ -27,5 +28,3 @@ def generate_file_sha1(fetch_file_path, blocksize=2 ** 16):
                 break
             m.update(buf)
     return m.hexdigest()
-
-

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import socket
 from argparse import ArgumentParser
 from time import sleep

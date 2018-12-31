@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import socket
 import unittest
 
@@ -5,7 +7,8 @@ from common import empty_dir
 from common.log import get_logger
 from common.sftp.action_codes import SFTPActionCodes
 from common.sftp.mirrorer import Mirrorer
-from test.common.config import LOCAL_BASE, SFTP_BASE, REPO_ROOT, SFTP_HOST, SFTP_USER, SFTP_PASS, SFTP_PORT
+from test.common.config import LOCAL_BASE, SFTP_BASE, SFTP_HOST, SFTP_USER, SFTP_PASS, SFTP_PORT
+from config import REPO_ROOT
 from common.networking.port_forwarder import start_forwarding, stop_forwarding
 from common.networking import ANY_RANDOM_AVAILABLE_PORT
 from test.common.sftp.mirrorer_test import TestMirrorerBase
@@ -16,7 +19,7 @@ These tests require a running local SFTP server, configured in src.test.common.c
   This should be fully automated by restart_container()
 
   To run one by hand with the Docker CLI:
-    Run an SFTP server 
+    Run an SFTP server
       - on port 2022
       - mounting the home directory to /Users/mitchell.ludwig/dev/sftping/src/test/_sftp/
       - Username: foo
@@ -94,7 +97,6 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
         self.assertEqual(['/file_0.txt', '/file_1.txt', '/file_2.txt', '/file_3.txt'], new_files)
         for new_file_remote_path in new_files:
             self.assert_local_has_file(new_file_remote_path)
-
 
 
 if __name__ == '__main__':

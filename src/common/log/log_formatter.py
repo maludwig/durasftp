@@ -8,6 +8,7 @@ import arrow
 
 LOCAL_TIMEZONE = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
 
+
 class LogFormatter(Formatter):
 
     def usesTime(self):

@@ -6,7 +6,7 @@ import stat
 from stat import S_IXUSR
 
 from common.log import arg_parser_with_logs, get_logger
-from test.common.config import REPO_ROOT
+from config import REPO_ROOT
 
 SHEBANG_LINE = "#!/usr/bin/env python\n"
 
@@ -32,7 +32,7 @@ class ExecutabilityIssue(FixableIssue):
 
     def has_issue(self):
         if self.has_main_guard():
-            logger.info("Has main guard: {}".format(self.file_path))
+            logger.debug("Has main guard: {}".format(self.file_path))
             is_executable = os.access(self.file_path, os.X_OK)
             if not is_executable:
                 return "Python program is not executable"
@@ -45,6 +45,8 @@ class ExecutabilityIssue(FixableIssue):
     def has_main_guard(self):
         for line in self.file_content_lines:
             if "if __name__ == '__main__':" in line:
+                return True
+            if 'if __name__ == "__main__":' in line:
                 return True
 
     def has_shebang(self):
@@ -66,19 +68,55 @@ class ExecutabilityIssue(FixableIssue):
                 python_file.writelines(self.file_content_lines)
 
 
+UNITTEST_CALL = """
+if __name__ == "__main__":
+    unittest.main()
+"""
+
+
+class TestSuiteIssue(FixableIssue):
+    def has_issue(self):
+        if re.match(r'.*_test\.py$', self.file_path):
+            for line in self.file_content_lines:
+                if re.match(r' +unittest\.main\(\)', line):
+                    return False
+            return "Missing unittest.main()"
+        return False
+
+    def fix_issue(self):
+        self.file_content_lines = self.file_content_lines + UNITTEST_CALL.splitlines(keepends=True)
+        with open(self.file_path, 'w') as python_file:
+            python_file.writelines(self.file_content_lines)
+
+
 def get_fixable_issue_classes():
-    return [ExecutabilityIssue]
+    return [ExecutabilityIssue, TestSuiteIssue]
 
 
 def get_python_file_paths():
-    # return [__file__]
     python_file_paths = []
     for root, dirs, files in os.walk(REPO_ROOT, topdown=False):
         for name in files:
             file_path = os.path.join(root, name)
             if re.match(r'.*\.py$', file_path):
                 python_file_paths.append(file_path)
-    return python_file_paths[0:3]
+    return python_file_paths[0:4]
+
+
+def get_all_issues(fix_things=False):
+    all_python_file_paths = get_python_file_paths()
+    all_issues = []
+    for python_file_path in all_python_file_paths:
+        logger.debug("Checking: {}".format(python_file_path))
+        for fixable_issue_class in get_fixable_issue_classes():
+            fixable = fixable_issue_class(python_file_path)
+            issue_msg = fixable.has_issue()
+            if issue_msg:
+                logger.warning("{}: {}".format(issue_msg, python_file_path))
+                all_issues.append(fixable)
+                if fix_things:
+                    fixable.fix_issue()
+    return all_issues
 
 
 if __name__ == "__main__":
@@ -86,14 +124,4 @@ if __name__ == "__main__":
     parser.add_argument("--fix", action="store_true")
     args = parser.parse_args()
     print(vars(args))
-    if args.fix:
-        fix_things = True
-    all_python_file_paths = get_python_file_paths()
-    for python_file_path in all_python_file_paths:
-        for fixable_issue_class in get_fixable_issue_classes():
-            fixable = fixable_issue_class(python_file_path)
-            issue_msg = fixable.has_issue()
-            if issue_msg:
-                logger.warning("{}: {}".format(issue_msg, python_file_path))
-                if fix_things:
-                    fixable.fix_issue()
+    get_all_issues(args.fix)

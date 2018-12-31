@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import unittest
 from os import makedirs, stat, utime, urandom
 from os.path import join, dirname, isfile, isdir
@@ -8,7 +10,8 @@ from common.log import get_logger
 from common.sftp.action import SFTPAction
 from common.sftp.action_codes import SFTPActionCodes
 from common.sftp.mirrorer import Mirrorer
-from test.common.config import LOCAL_BASE, SFTP_HOST, SFTP_BASE, SFTP_PASS, SFTP_PORT, SFTP_USER, REPO_ROOT
+from test.common.config import LOCAL_BASE, SFTP_HOST, SFTP_BASE, SFTP_PASS, SFTP_PORT, SFTP_USER
+from config import REPO_ROOT
 from test.common.sftp.container import restart_container, get_container, kill_container
 from test.common.sftp.mirrorer_test import TestMirrorerBase
 
@@ -18,7 +21,7 @@ These tests require a running local SFTP server, configured in src.test.common.c
   This should be fully automated by restart_container()
 
   To run one by hand with the Docker CLI:
-    Run an SFTP server 
+    Run an SFTP server
       - on port 2022
       - mounting the home directory to /Users/mitchell.ludwig/dev/sftping/src/test/_sftp/
       - Username: foo

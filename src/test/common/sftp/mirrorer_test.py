@@ -8,7 +8,8 @@ from paramiko import SSHException
 from common import empty_dir, generate_file_sha1
 from common.log import get_logger
 from common.sftp.mirrorer import Mirrorer
-from test.common.config import LOCAL_BASE, SFTP_HOST, SFTP_BASE, SFTP_PASS, SFTP_PORT, SFTP_USER, REPO_ROOT
+from test.common.config import LOCAL_BASE, SFTP_HOST, SFTP_BASE, SFTP_PASS, SFTP_PORT, SFTP_USER
+from config import REPO_ROOT
 from test.common.sftp.container import get_container
 
 """
@@ -17,7 +18,7 @@ These tests require a running local SFTP server, configured in src.test.common.c
   This should be fully automated by restart_container()
 
   To run one by hand with the Docker CLI:
-    Run an SFTP server 
+    Run an SFTP server
       - on port 2022
       - mounting the home directory to /Users/mitchell.ludwig/dev/sftping/src/test/_sftp/
       - Username: foo
@@ -173,7 +174,6 @@ class TestMirrorerBase(unittest.TestCase):
                 if x == MAX_ATTEMPTS - 1:
                     raise Exception("Reached max attempts of {} for path {}".format(MAX_ATTEMPTS, content_path))
 
-
     def ensure_local_path_is_visible(self, content_path):
         # Sometimes it can take a fraction of a moment to create things,
         # this ensures that all entities exist in the cache of the
@@ -194,7 +194,6 @@ class TestMirrorerBase(unittest.TestCase):
             except FileNotFoundError:
                 if x == MAX_ATTEMPTS - 1:
                     raise Exception("Reached max attempts of {} for path {}".format(MAX_ATTEMPTS, content_path))
-
 
     def expect_sftp_failure(self, fn):
         try:
