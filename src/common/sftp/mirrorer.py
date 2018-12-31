@@ -89,10 +89,7 @@ class Mirrorer:
                 local_size = local_stat.st_size
                 remote_modified_time = arrow.get(int(remote_entry.st_mtime))
                 remote_size = remote_entry.st_size
-                if (
-                    local_modified_time == remote_modified_time
-                    and local_size == remote_size
-                ):
+                if local_modified_time == remote_modified_time and local_size == remote_size:
                     return True
                 else:
                     return False
@@ -197,8 +194,7 @@ class Mirrorer:
 
 
 def parse_arguments():
-    parser = ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                            epilog=EPILOG)
+    parser = ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG)
     parser.add_argument("--local-base", help="Local directory to mirror with", required=True)
     parser.add_argument("--host", help="SFTP server IP/FQDN", required=True)
     parser.add_argument("--username", help="SFTP username", required=True)
@@ -206,12 +202,7 @@ def parse_arguments():
     parser.add_argument("--private-key", help="Path to a private key file")
     parser.add_argument("--private-key-pass", help="Password to an encrypted private key file")
     parser.add_argument("--port", default=22, help="SFTP port", type=int)
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        default=False,
-        help="Don't actually do anything, just print what would be done",
-    )
+    parser.add_argument("--dry-run", action="store_true", default=False, help="Don't actually do anything, just print what would be done")
     add_logger_args(parser)
     return parser.parse_args()
 

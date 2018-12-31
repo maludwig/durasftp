@@ -143,33 +143,11 @@ if __name__ == "__main__":
     parser.add_argument("local_port", type=int, help="The local port to open")
     parser.add_argument("remote_host", type=str, help="The remote host to forward to")
     parser.add_argument("remote_port", type=int, help="The remote port to connect to")
-    parser.add_argument(
-        "--packet-drop-rate",
-        default=0,
-        type=float,
-        help="What fraction of packets to drop (ex. 0.2 will drop one in five packets)",
-    )
-    parser.add_argument(
-        "--kbps",
-        default=INFINTE_SPEED,
-        type=float,
-        help="The maximum speed to forward packets at",
-    )
-    parser.add_argument(
-        "--connecting-lag",
-        default=0,
-        type=float,
-        help="The amount of seconds to wait before actually connecting",
-    )
+    parser.add_argument("--packet-drop-rate", default=0, type=float, help="What fraction of packets to drop (ex. 0.2 will drop one in five packets)")
+    parser.add_argument("--kbps", default=INFINTE_SPEED, type=float, help="The maximum speed to forward packets at")
+    parser.add_argument("--connecting-lag", default=0, type=float, help="The amount of seconds to wait before actually connecting")
     args = parser.parse_args()
     print(vars(args))
-    listener_thread = start_forwarding(
-        args.local_port,
-        args.remote_host,
-        args.remote_port,
-        args.kbps,
-        args.packet_drop_rate,
-        args.connecting_lag,
-    )
+    listener_thread = start_forwarding(args.local_port, args.remote_host, args.remote_port, args.kbps, args.packet_drop_rate, args.connecting_lag)
     listener_thread.join()
     print("Done")

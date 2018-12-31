@@ -39,9 +39,7 @@ class SFTPActionList:
 
         if codes is not None:
             # filtered_items = filter(lambda item: item[1].action_code in codes, filtered_items)
-            filtered_items = [
-                item for item in filtered_items if item[1].action_code in codes
-            ]
+            filtered_items = [item for item in filtered_items if item[1].action_code in codes]
         return filtered_items
 
     def clear(self):
