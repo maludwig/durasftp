@@ -2,7 +2,7 @@ import os
 
 from os.path import dirname, isdir, join
 
-REPO_ROOT = dirname(dirname(dirname(dirname(__file__))))
+REPO_ROOT = dirname(dirname(__file__))
 
 if not isdir(join(REPO_ROOT, ".git")):
     raise Exception("Bad repo root mapping, could not find .git under: {}".format(REPO_ROOT))

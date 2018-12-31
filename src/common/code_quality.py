@@ -30,15 +30,16 @@ class FixableIssue:
 
 class ExecutabilityIssue(FixableIssue):
     def has_issue(self):
-        if self.has_main_guard():
-            logger.debug("Has main guard: {}".format(self.file_path))
-            is_executable = os.access(self.file_path, os.X_OK)
-            if not is_executable:
-                return "Python program is not executable"
-            if not self.has_shebang():
-                return "Missing shebang"
-            if not self.has_newline_after_shebang():
-                return "Missing shebang newline"
+        if re.match(r".*\.py$", self.file_path):
+            if self.has_main_guard():
+                logger.debug("Has main guard: {}".format(self.file_path))
+                is_executable = os.access(self.file_path, os.X_OK)
+                if not is_executable:
+                    return "Python program is not executable"
+                if not self.has_shebang():
+                    return "Missing shebang"
+                if not self.has_newline_after_shebang():
+                    return "Missing shebang newline"
         return False
 
     def has_main_guard(self):
