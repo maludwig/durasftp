@@ -1,5 +1,3 @@
-
-
 class SFTPActionCodes:
     LMKDIR = "LMKDIR"
     RMKDIR = "RMKDIR"

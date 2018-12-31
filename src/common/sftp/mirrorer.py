@@ -89,13 +89,16 @@ class Mirrorer:
                 local_size = local_stat.st_size
                 remote_modified_time = arrow.get(int(remote_entry.st_mtime))
                 remote_size = remote_entry.st_size
-                if local_modified_time == remote_modified_time and local_size == remote_size:
+                if (
+                    local_modified_time == remote_modified_time
+                    and local_size == remote_size
+                ):
                     return True
                 else:
                     return False
 
     def remote_path_from_local(self, local_path):
-        return local_path[len(self.local_base):]
+        return local_path[len(self.local_base) :]
 
     def local_path_from_remote(self, remote_path):
         return self.local_base + remote_path
@@ -203,7 +206,12 @@ def parse_arguments():
     parser.add_argument("--private-key", help="Path to a private key file")
     parser.add_argument("--private-key-pass", help="Password to an encrypted private key file")
     parser.add_argument("--port", default=22, help="SFTP port", type=int)
-    parser.add_argument("--dry-run", action="store_true", default=False, help="Don't actually do anything, just print what would be done")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Don't actually do anything, just print what would be done",
+    )
     add_logger_args(parser)
     return parser.parse_args()
 
@@ -212,9 +220,15 @@ if __name__ == "__main__":
     args = parse_arguments()
     print(vars(args))
     # exit()
-    mirrorer = Mirrorer(local_base=args.local_base, host=args.host, username=args.username, port=args.port,
-                        password=args.password,
-                        private_key=args.private_key, private_key_pass=args.private_key_pass, )
+    mirrorer = Mirrorer(
+        local_base=args.local_base,
+        host=args.host,
+        username=args.username,
+        port=args.port,
+        password=args.password,
+        private_key=args.private_key,
+        private_key_pass=args.private_key_pass,
+    )
     mirrorer.mirror_from_remote(dry_run=False)
     filtered_stuff = mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.LMKDIR])
     for remote_path, action in filtered_stuff:

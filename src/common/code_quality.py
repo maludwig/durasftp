@@ -29,7 +29,6 @@ class FixableIssue:
 
 
 class ExecutabilityIssue(FixableIssue):
-
     def has_issue(self):
         if self.has_main_guard():
             logger.debug("Has main guard: {}".format(self.file_path))
@@ -60,11 +59,11 @@ class ExecutabilityIssue(FixableIssue):
         os.chmod(self.file_path, S_IXUSR | file_stat.st_mode)
         if not self.has_shebang():
             self.file_content_lines = [SHEBANG_LINE, "\n"] + self.file_content_lines
-            with open(self.file_path, 'w') as python_file:
+            with open(self.file_path, "w") as python_file:
                 python_file.writelines(self.file_content_lines)
         elif not self.has_newline_after_shebang():
             self.file_content_lines = [SHEBANG_LINE, "\n"] + self.file_content_lines[1:]
-            with open(self.file_path, 'w') as python_file:
+            with open(self.file_path, "w") as python_file:
                 python_file.writelines(self.file_content_lines)
 
 
@@ -72,20 +71,21 @@ UNITTEST_CALL = """
 if __name__ == "__main__":
     unittest.main()
 """
+UNITTEST_CALL_LINES = UNITTEST_CALL.splitlines(keepends=True)
 
 
 class TestSuiteIssue(FixableIssue):
     def has_issue(self):
-        if re.match(r'.*_test\.py$', self.file_path):
+        if re.match(r".*_test\.py$", self.file_path):
             for line in self.file_content_lines:
-                if re.match(r' +unittest\.main\(\)', line):
+                if re.match(r" +unittest\.main\(\)", line):
                     return False
             return "Missing unittest.main()"
         return False
 
     def fix_issue(self):
-        self.file_content_lines = self.file_content_lines + UNITTEST_CALL.splitlines(keepends=True)
-        with open(self.file_path, 'w') as python_file:
+        self.file_content_lines = self.file_content_lines + UNITTEST_CALL_LINES
+        with open(self.file_path, "w") as python_file:
             python_file.writelines(self.file_content_lines)
 
 
@@ -98,7 +98,7 @@ def get_python_file_paths():
     for root, dirs, files in os.walk(REPO_ROOT, topdown=False):
         for name in files:
             file_path = os.path.join(root, name)
-            if re.match(r'.*\.py$', file_path):
+            if re.match(r".*\.py$", file_path):
                 python_file_paths.append(file_path)
     return python_file_paths[0:4]
 
