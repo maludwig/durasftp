@@ -7,7 +7,6 @@ logger = get_logger(__name__)
 
 
 class TestCodeQuality(unittest.TestCase):
-
     def test_all_files_have_quality_code(self):
         issues = get_all_issues(fix_things=False)
         self.assertEqual([], issues)

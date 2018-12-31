@@ -34,7 +34,7 @@ MAX_ATTEMPTS = 3
 
 
 def paths_from_remote(remote_path):
-    if remote_path[-1] == '/':
+    if remote_path[-1] == "/":
         remote_path = remote_path[:-1]
     local_path = LOCAL_BASE + remote_path
     sftp_path = SFTP_BASE + remote_path
@@ -42,7 +42,6 @@ def paths_from_remote(remote_path):
 
 
 class TestMirrorerBase(unittest.TestCase):
-
     def assert_local_missing(self, remote_path):
         remote_path, local_path, sftp_path = paths_from_remote(remote_path)
         self.assertFalse(exists(local_path))
@@ -78,16 +77,13 @@ class TestMirrorerBase(unittest.TestCase):
             local_modification_timestamp = int(local_stat.st_mtime)
             remote_modification_timestamp = int(sftp_stat.st_mtime)
             self.assertEqual(local_modification_timestamp, remote_modification_timestamp)
-            self.assertEqual(
-                generate_file_sha1(local_path),
-                generate_file_sha1(sftp_path),
-            )
+            self.assertEqual(generate_file_sha1(local_path), generate_file_sha1(sftp_path))
 
     def make_local_test_file(self, remote_path, content=b"Hello world", iterations=1, suppress_check=False):
         remote_path, local_path, sftp_path = paths_from_remote(remote_path)
         parent_dir_path = dirname(local_path)
         makedirs(parent_dir_path, exist_ok=True)
-        with open(local_path, 'wb') as temp_file:
+        with open(local_path, "wb") as temp_file:
             for i in range(iterations):
                 temp_file.write(content)
         if not suppress_check:
@@ -99,7 +95,7 @@ class TestMirrorerBase(unittest.TestCase):
         remote_path, local_path, sftp_path = paths_from_remote(remote_path)
         parent_dir_path = dirname(sftp_path)
         makedirs(parent_dir_path, exist_ok=True)
-        with open(sftp_path, 'wb') as temp_file:
+        with open(sftp_path, "wb") as temp_file:
             for i in range(iterations):
                 temp_file.write(content)
         if not suppress_check:
@@ -112,7 +108,7 @@ class TestMirrorerBase(unittest.TestCase):
         for content_path in remote_paths:
             remote_path, local_path, sftp_path = paths_from_remote(content_path)
             return_list.append((remote_path, local_path, sftp_path))
-            if content_path[-1] == '/':
+            if content_path[-1] == "/":
                 makedirs(local_path, exist_ok=True)
             else:
                 self.make_local_test_file(remote_path, suppress_check=True)
@@ -126,16 +122,14 @@ class TestMirrorerBase(unittest.TestCase):
         for content_path in remote_paths:
             remote_path, local_path, sftp_path = paths_from_remote(content_path)
             return_list.append((remote_path, local_path, sftp_path))
-            if content_path[-1] == '/':
+            if content_path[-1] == "/":
                 makedirs(sftp_path, exist_ok=True)
             else:
                 self.make_remote_test_file(remote_path, suppress_check=True)
 
         all_remote_paths = set()
         for content_path in remote_paths:
-            all_remote_paths = all_remote_paths.union(
-                self.entry_with_parents(content_path)
-            )
+            all_remote_paths = all_remote_paths.union(self.entry_with_parents(content_path))
         for content_path in all_remote_paths:
             self.ensure_remote_path_is_visible(content_path)
         return return_list
@@ -143,13 +137,13 @@ class TestMirrorerBase(unittest.TestCase):
     def entry_with_parents(self, content_path):
         all_content_paths = [content_path]
         current_path = content_path
-        while current_path != '/':
-            if current_path[-1] == '/':
+        while current_path != "/":
+            if current_path[-1] == "/":
                 current_path = dirname(current_path[:-1])
             else:
                 current_path = dirname(current_path)
-            if current_path != '/':
-                current_path += '/'
+            if current_path != "/":
+                current_path += "/"
             all_content_paths.append(current_path)
         all_content_paths.sort()
         return all_content_paths
@@ -165,7 +159,7 @@ class TestMirrorerBase(unittest.TestCase):
             return True
         for x in range(MAX_ATTEMPTS):
             try:
-                if content_path[-1] == '/':
+                if content_path[-1] == "/":
                     self.mirrorer.conn.listdir_attr(content_path[:-1])
                 else:
                     self.mirrorer.conn.stat(content_path)
@@ -186,7 +180,7 @@ class TestMirrorerBase(unittest.TestCase):
         remote_path, local_path, sftp_path = paths_from_remote(content_path)
         for x in range(MAX_ATTEMPTS):
             try:
-                if content_path[-1] == '/':
+                if content_path[-1] == "/":
                     stat(local_path)
                 else:
                     stat(local_path)
@@ -202,7 +196,7 @@ class TestMirrorerBase(unittest.TestCase):
         except SSHException as ex:
             self.assertEqual("Server connection dropped: ", str(ex))
         except OSError as ex:
-            self.assertEqual('Socket is closed', str(ex))
+            self.assertEqual("Socket is closed", str(ex))
         except EOFError:
             pass
 
@@ -230,25 +224,14 @@ class TestMirrorerBase(unittest.TestCase):
 
     def test_entry_with_parents(self):
         all_parents = self.entry_with_parents("/some/nested/thing")
-        self.assertEqual([
-            "/",
-            "/some/",
-            "/some/nested/",
-            "/some/nested/thing",
-        ], all_parents)
+        self.assertEqual(["/", "/some/", "/some/nested/", "/some/nested/thing"], all_parents)
 
         all_parents = self.entry_with_parents("/some/nested/")
-        self.assertEqual([
-            "/",
-            "/some/",
-            "/some/nested/",
-        ], all_parents)
+        self.assertEqual(["/", "/some/", "/some/nested/"], all_parents)
 
         all_parents = self.entry_with_parents("/")
-        self.assertEqual([
-            "/",
-        ], all_parents)
+        self.assertEqual(["/"], all_parents)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

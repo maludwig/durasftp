@@ -60,7 +60,7 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
         stop_forwarding()
 
     def test_it_dies_if_the_connection_dies(self):
-        self.make_remote_test_file('/test.txt')
+        self.make_remote_test_file("/test.txt")
         self.mirrorer.mirror_from_remote()
         logger.info("Stopping forwarders")
         self.forwarder.stop()
@@ -69,7 +69,7 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
         self.expect_sftp_failure(self.mirrorer.mirror_from_remote)
 
     def test_it_dies_if_the_connection_gets_infinitely_slow(self):
-        self.make_remote_test_file('/test.txt')
+        self.make_remote_test_file("/test.txt")
         self.mirrorer.mirror_from_remote()
         logger.info("Cutting speed to 0kbps")
         self.forwarder.adjust_kbps(0)
@@ -94,10 +94,10 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
         self.make_remote_content(remote_paths)
         with self.assertRaises(socket.timeout):
             self.mirrorer.mirror_from_remote(callback=callback)
-        self.assertEqual(['/file_0.txt', '/file_1.txt', '/file_2.txt', '/file_3.txt'], new_files)
+        self.assertEqual(["/file_0.txt", "/file_1.txt", "/file_2.txt", "/file_3.txt"], new_files)
         for new_file_remote_path in new_files:
             self.assert_local_has_file(new_file_remote_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

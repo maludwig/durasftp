@@ -76,10 +76,8 @@ def start_container():
     svr = client.containers.run(
         "atmoz/sftp",
         "{}:{}:::".format(SFTP_USER, SFTP_PASS),
-        ports={
-            "22": SFTP_PORT
-        },
-        volumes={SFTP_MOUNT: {'bind': '/home', 'mode': 'rw'}},
+        ports={"22": SFTP_PORT},
+        volumes={SFTP_MOUNT: {"bind": "/home", "mode": "rw"}},
         detach=True,
         name=CONTAINER_NAME,
     )

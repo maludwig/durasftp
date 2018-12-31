@@ -44,7 +44,7 @@ def make_test_file(remote_path, content=b"Hello world", iterations=1):
     full_path = SFTP_BASE + remote_path
     parent_dir_path = dirname(full_path)
     makedirs(parent_dir_path, exist_ok=True)
-    with open(full_path, 'wb') as temp_file:
+    with open(full_path, "wb") as temp_file:
         for i in range(iterations):
             temp_file.write(content)
     return full_path
@@ -57,7 +57,6 @@ def make_test_dir(remote_path):
 
 
 class TestSFTPAction(TestMirrorerBase):
-
     def test_stat_automatically_populates(self):
         remote_path = "/temp.txt"
         action = SFTPAction(self.mirrorer, SFTPActionCodes.PUT, remote_path)
@@ -102,5 +101,5 @@ class TestSFTPAction(TestMirrorerBase):
         self.assertEqual(2, len(actions))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

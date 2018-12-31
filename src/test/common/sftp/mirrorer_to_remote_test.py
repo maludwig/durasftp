@@ -26,7 +26,6 @@ logger = get_logger(__name__)
 
 
 class TestMirrorerToRemote(TestMirrorerBase):
-
     def test_single_file_mirror(self):
         remote_path, local_path, sftp_path = self.make_local_test_file("/temp.txt")
         self.mirrorer.mirror_to_remote(dry_run=True)
@@ -68,8 +67,8 @@ class TestMirrorerToRemote(TestMirrorerBase):
 
         remote_file_stat = stat(sftp_path)
         # Copies files with a different length but the same modification time
-        with open(sftp_path, 'a') as editedfile:
-            editedfile.write('!!!')
+        with open(sftp_path, "a") as editedfile:
+            editedfile.write("!!!")
         utime(sftp_path, (remote_file_stat.st_atime, remote_file_stat.st_mtime))
         self.mirrorer.mirror_to_remote()
         get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.PUT])
@@ -87,13 +86,13 @@ class TestMirrorerToRemote(TestMirrorerBase):
         # iterations = 300
         iterations = 3
 
-        remote_path = '/big/huge.csv'
+        remote_path = "/big/huge.csv"
         self.make_local_test_file(remote_path, content=random_megabyte, iterations=iterations)
         self.mirrorer.mirror_to_remote()
         self.assert_files_match(remote_path)
 
     def test_it_handles_empty_directories(self):
-        all_path_sets = self.make_local_content(['/some/nested/dir/'])
+        all_path_sets = self.make_local_content(["/some/nested/dir/"])
         remote_path, local_path, sftp_path = all_path_sets[0]
         self.mirrorer.mirror_to_remote(dry_run=True)
         self.assert_remote_missing(remote_path)
@@ -101,8 +100,8 @@ class TestMirrorerToRemote(TestMirrorerBase):
         self.assert_remote_has_dir(remote_path)
 
     def test_it_overwrites_files_with_dirs(self):
-        self.make_remote_content(['/initially_a_file'])
-        all_path_sets = self.make_local_content(['/initially_a_file/'])
+        self.make_remote_content(["/initially_a_file"])
+        all_path_sets = self.make_local_content(["/initially_a_file/"])
         remote_path, local_path, sftp_path = all_path_sets[0]
         self.mirrorer.mirror_to_remote(dry_run=True)
         self.assert_remote_has_file(remote_path)
@@ -110,8 +109,8 @@ class TestMirrorerToRemote(TestMirrorerBase):
         self.assert_remote_has_dir(remote_path)
 
     def test_it_overwrites_dirs_with_files(self):
-        self.make_remote_content(['/initially_a_dir/'])
-        all_path_sets = self.make_local_content(['/initially_a_dir'])
+        self.make_remote_content(["/initially_a_dir/"])
+        all_path_sets = self.make_local_content(["/initially_a_dir"])
         remote_path, local_path, sftp_path = all_path_sets[0]
         self.mirrorer.mirror_to_remote(dry_run=True)
         self.assert_remote_has_dir(remote_path)
@@ -120,7 +119,7 @@ class TestMirrorerToRemote(TestMirrorerBase):
 
     def test_it_overwrites_nested_dirs_with_files(self):
         # self.make_remote_content(['/initially_a_dir/with/nested/stuff.txt'])
-        all_path_sets = self.make_local_content(['/initially_a_dir'])
+        all_path_sets = self.make_local_content(["/initially_a_dir"])
         # remote_path, local_path, sftp_path = all_path_sets[0]
         # self.mirrorer.mirror_to_remote(dry_run=True)
         # self.assert_remote_has_dir(remote_path)
@@ -128,5 +127,5 @@ class TestMirrorerToRemote(TestMirrorerBase):
         # self.assert_remote_has_file(remote_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
