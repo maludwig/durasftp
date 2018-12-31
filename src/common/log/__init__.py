@@ -6,20 +6,21 @@ from os import environ
 from common.log.log_formatter import LogFormatter
 
 NAME_TO_LOG_LEVEL = {
-    'CRITICAL': CRITICAL,
-    'ERROR': ERROR,
-    'WARN': WARNING,
-    'WARNING': WARNING,
-    'INFO': INFO,
-    'DEBUG': DEBUG,
+    "CRITICAL": CRITICAL,
+    "ERROR": ERROR,
+    "WARN": WARNING,
+    "WARNING": WARNING,
+    "INFO": INFO,
+    "DEBUG": DEBUG,
 }
 
-log_level_string = environ.get('LOG_LEVEL', "WARNING")
+FORMAT_STRING = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+log_level_string = environ.get("LOG_LEVEL", "WARNING")
 log_level = NAME_TO_LOG_LEVEL[log_level_string]
 log_file_path = None
 project_logger = logging.getLogger("mamba")
 project_handler = logging.StreamHandler()
-project_handler.setFormatter(LogFormatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+project_handler.setFormatter(LogFormatter(FORMAT_STRING))
 for handler in project_logger.handlers:
     project_logger.removeHandler(handler)
 project_logger.addHandler(project_handler)
@@ -43,7 +44,7 @@ def set_log_file_path(new_log_file_path):
     for handler in project_logger.handlers:
         project_logger.removeHandler(handler)
     project_handler = logging.FileHandler(filename=log_file_path)
-    project_handler.setFormatter(LogFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    project_handler.setFormatter(LogFormatter(FORMAT_STRING))
     project_logger.addHandler(project_handler)
 
 
@@ -63,8 +64,19 @@ def get_project_logger():
 def add_logger_args(parser):
     from common.log.log_file_action import LogFileAction
     from common.log.log_level_action import LogLevelAction
-    parser.add_argument("-v", "--verbose", action=LogLevelAction, help="Increase log output, specify multiple times for extra output (ex. -vvv)")
-    parser.add_argument("-q", "--quiet", action=LogLevelAction, help="Less log output, -qqq for no logging")
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action=LogLevelAction,
+        help="Increase log output, specify multiple times for extra output (ex. -vvv)",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action=LogLevelAction,
+        help="Less log output, -qqq for no logging",
+    )
     parser.add_argument("--log-file", action=LogFileAction, help="Path for a log file")
 
 
