@@ -70,7 +70,6 @@ class TestSFTPAction(TestMirrorerBase):
         self.assertFalse(action.remote_exists)
         self.assertFalse(action.remote_is_dir)
         self.assertFalse(action.remote_is_file)
-        print(action)
 
     def test_action_callbacks(self):
         actions = []

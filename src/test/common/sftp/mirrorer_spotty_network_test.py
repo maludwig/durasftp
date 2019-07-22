@@ -3,6 +3,8 @@
 import socket
 import unittest
 
+from timeout_decorator import timeout
+
 from common import empty_dir
 from common.log import get_logger
 from common.sftp.action_codes import SFTPActionCodes
@@ -31,8 +33,9 @@ These tests require a running local SFTP server, configured in src.test.common.c
 
 logger = get_logger(__name__)
 
-
 # FORWARDING_PORT = 10022
+
+BASE_TIMEOUT = 60
 
 
 class TestMirrorerShittyNetwork(TestMirrorerBase):
@@ -59,6 +62,7 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
         self.mirrorer.close()
         stop_forwarding()
 
+    @timeout(BASE_TIMEOUT)
     def test_it_dies_if_the_connection_dies(self):
         self.make_remote_test_file("/test.txt")
         self.mirrorer.mirror_from_remote()
@@ -68,16 +72,44 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
         logger.info("Stopped forwarders")
         self.expect_sftp_failure(self.mirrorer.mirror_from_remote)
 
+    @timeout(BASE_TIMEOUT)
     def test_it_dies_if_the_connection_gets_infinitely_slow(self):
-        self.make_remote_test_file("/test.txt")
-        self.mirrorer.mirror_from_remote()
-        logger.info("Cutting speed to 0kbps")
-        self.forwarder.adjust_kbps(0)
-        logger.info("Cut speed to 0kbps")
-        with self.assertRaises(socket.timeout):
+
+        def attempt():
             self.mirrorer.mirror_from_remote()
             self.fail("Mirror did not timeout when the network got infinitely slow")
 
+        self.make_remote_test_file("/test.txt")
+        self.mirrorer.mirror_from_remote()
+        logger.info("Cutting speed to 0kbps")
+        self.kbps = self.forwarder.adjust_kbps(0)
+        logger.info("Cut speed to 0kbps")
+
+        self.expect_sftp_failure(attempt)
+
+    @timeout(BASE_TIMEOUT)
+    def test_it_dies_if_the_connection_half_dies_then_gets_infinitely_slow(self):
+        # This ended up being a very niche issue that took forever to troubleshoot
+        # I know it's a bit exotic to write a test for, but this should prevent it
+        # from happening in the future
+
+        def attempt():
+            self.mirrorer.mirror_from_remote()
+            self.fail("Mirror did not timeout when the network got infinitely slow")
+
+        self.make_remote_test_file("/test.txt")
+        self.mirrorer.mirror_from_remote()
+        logger.info("Cutting speed to 0kbps for current connection")
+        self.kbps = self.forwarder.adjust_kbps(0, adjust_future_connections=False)
+        logger.info("Cut speed to 0kbps for current connection")
+        self.mirrorer.mirror_from_remote()
+
+        logger.info("Cutting speed to 0kbps for all connections")
+        self.kbps = self.forwarder.adjust_kbps(0, adjust_future_connections=True)
+        logger.info("Cut speed to 0kbps for all connections")
+        self.expect_sftp_failure(attempt)
+
+    @timeout(BASE_TIMEOUT)
     def test_callbacks_will_have_all_synced_files_on_disconnect(self):
         new_files = []
         remote_paths = ["/file_{}.txt".format(x) for x in range(9)]
@@ -91,10 +123,72 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
                     self.forwarder.adjust_kbps(0)
                     logger.info("Cut speed to 0kbps")
 
-        self.make_remote_content(remote_paths)
-        with self.assertRaises(socket.timeout):
+        def attempt():
             self.mirrorer.mirror_from_remote(callback=callback)
+
+        self.make_remote_content(remote_paths)
+
+        self.expect_sftp_failure(attempt)
+
         self.assertEqual(["/file_0.txt", "/file_1.txt", "/file_2.txt", "/file_3.txt"], new_files)
+        for new_file_remote_path in new_files:
+            self.assert_local_has_file(new_file_remote_path)
+
+    @timeout(BASE_TIMEOUT)
+    def test_rejected_connections_error_out(self):
+        self.mirrorer.conn.close()
+
+        def connect_to_port_12345():
+            self.mirrorer = Mirrorer(local_base=LOCAL_BASE, host=SFTP_HOST, username=SFTP_USER, password=SFTP_PASS, port=12345, timeout=3)
+            self.fail("Connected")
+
+        self.expect_sftp_failure(connect_to_port_12345)
+
+    @timeout(BASE_TIMEOUT)
+    def test_infinitely_slow_connections_timeout(self):
+
+        def connect_to_stopped_port():
+            self.forwarder.adjust_kbps(0)
+            self.mirrorer = Mirrorer(local_base=LOCAL_BASE, host=SFTP_HOST, username=SFTP_USER, password=SFTP_PASS, port=self.forwarding_port, timeout=3)
+            self.fail("Connected")
+
+        self.expect_sftp_failure(connect_to_stopped_port)
+
+    @timeout(BASE_TIMEOUT)
+    def test_infinitely_slow_connections_reconnect(self):
+
+        new_files = []
+        remote_paths = ["/file_{}.txt".format(x) for x in range(9)]
+
+        def callback(action):
+            if action.action_code == SFTPActionCodes.GET:
+                new_files.append(action.remote_path)
+                if action.remote_path == "/file_3.txt":
+                    # Die halfway through
+                    logger.info("Cutting speed to 0kbps")
+                    self.forwarder.adjust_kbps(0, adjust_future_connections=False)
+                    logger.info("Cut speed to 0kbps")
+
+        self.make_remote_content(remote_paths)
+        self.mirrorer.mirror_from_remote(callback=callback)
+        self.assertEqual(remote_paths, new_files)
+        for new_file_remote_path in new_files:
+            self.assert_local_has_file(new_file_remote_path)
+
+    @timeout(BASE_TIMEOUT)
+    def test_very_slow_connections_work(self):
+
+        new_files = []
+        remote_paths = ["/file_{}.txt".format(x) for x in range(9)]
+
+        def callback(action):
+            if action.action_code == SFTPActionCodes.GET:
+                new_files.append(action.remote_path)
+
+        self.make_remote_content(remote_paths)
+        self.forwarder.adjust_kbps(20, adjust_future_connections=True)
+        self.mirrorer.mirror_from_remote(callback=callback)
+        self.assertEqual(remote_paths, new_files)
         for new_file_remote_path in new_files:
             self.assert_local_has_file(new_file_remote_path)
 

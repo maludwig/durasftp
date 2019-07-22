@@ -5,6 +5,22 @@ from common.log import set_log_level
 
 
 class LogLevelAction(argparse.Action):
+    """
+    This argparse action allows for a command line argument to specify the log level
+    Examples:
+        Silent (no logging):
+            python <script> -qqq
+        Critical errors only:
+            python <script> -qq
+        All Errors:
+            python <script> -q
+        Warnings, and all errors (default):
+            python <script>
+        Information, warnings, and errors:
+            python <script> -v
+        Debug logging:
+            python <script> -vv
+    """
     def __init__(self, option_strings, dest, default=None, required=False, help=None):
         super().__init__(option_strings=option_strings, dest=dest, nargs=0, default=default, required=required, help=help)
 

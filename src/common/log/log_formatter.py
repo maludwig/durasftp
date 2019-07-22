@@ -1,6 +1,3 @@
-"""
-This logging Formatter prints both UTC and local timestamps to the logs
-"""
 import datetime
 from logging import Formatter
 
@@ -10,6 +7,11 @@ LOCAL_TIMEZONE = datetime.datetime.now(datetime.timezone.utc).astimezone().tzinf
 
 
 class LogFormatter(Formatter):
+    """
+    This log formatter writes out the current timestamp in both local and UTC time:
+    Example:
+        [2019-01-02T16:45:06Z] [2019-01-02T09:45:06-07:00] - WARNING - mamba.example - Doing a thing
+    """
     def usesTime(self):
         return True
 

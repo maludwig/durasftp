@@ -2,11 +2,13 @@ import signal
 import threading
 from threading import Event, Lock
 
-from common.networking.port_forwarder import logger
+from common.log import get_logger
 
 global_stop_event = Event()
 mutex = Lock()
 thread_count = 0
+
+logger = get_logger(__name__)
 
 
 class StoppableThread(threading.Thread):

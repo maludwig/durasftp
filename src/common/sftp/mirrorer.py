@@ -18,6 +18,7 @@ from common.log import add_logger_args, get_logger
 from common.sftp.action import SFTPAction
 from common.sftp.action_codes import SFTPActionCodes
 from common.sftp.action_list import SFTPActionList
+from common.sftp.connection import DurableSFTPConnection
 
 EPILOG = __doc__
 
@@ -40,14 +41,19 @@ class Mirrorer:
     WITH_PERMS = "WITH_PERMS"
 
     def __init__(self, local_base, options=[], timeout=15, **kwargs):
-        self.conn = pysftp.Connection(cnopts=cnopts, **kwargs)
-        self.conn.timeout = timeout
+        logger.info("Opening sftp://{}:{}".format(kwargs['host'], kwargs['port']))
+        self.conn = DurableSFTPConnection(cnopts=cnopts, timeout=timeout, **kwargs)
         # Realpath here ensures that trailing slashes will not cause issues
         self.local_base = realpath(local_base)
         self.action_list = SFTPActionList(self)
         self.remote_attr_tree = OrderedDict()
         self.local_attr_tree = OrderedDict()
         self.options = options
+        self.conn.listdir('/')
+        if self.conn and self.conn._transport:
+            transport = self.conn._transport
+            sock = transport.sock
+            logger.info("Opened sftp://{}:{} on socket: {}".format(kwargs['host'], kwargs['port'], sock.fileno()))
 
     def rmtree(self, remote_dir):
         files_to_delete = []
@@ -190,6 +196,10 @@ class Mirrorer:
         self.action_list.do_actions(callback=callback, dry_run=dry_run)
 
     def close(self):
+        if self.conn._transport:
+            transport = self.conn._transport
+            sock = transport.sock
+            logger.info("Closing socket: {}".format(sock.fileno()))
         self.conn.close()
 
 

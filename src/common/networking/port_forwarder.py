@@ -78,8 +78,9 @@ class ListeningThread(StoppableThread):
             self.log_info("Error Closing S:{}".format(dock_socket.fileno()))
         self.log_info("We are stopping")
 
-    def adjust_kbps(self, kbps):
-        self.kbps = kbps
+    def adjust_kbps(self, kbps, adjust_future_connections=True):
+        if adjust_future_connections:
+            self.kbps = kbps
         for forwarding_thread in self.forwarding_threads:
             forwarding_thread.adjust_kbps(kbps)
 

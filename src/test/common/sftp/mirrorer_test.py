@@ -1,9 +1,11 @@
+import socket
 import unittest
 from os import makedirs, stat, scandir
 from os.path import isfile, isdir, exists, dirname
 from stat import S_ISDIR, S_ISREG
 
 from paramiko import SSHException
+from pysftp import ConnectionException
 
 from common import empty_dir, generate_file_sha1
 from common.log import get_logger
@@ -193,12 +195,11 @@ class TestMirrorerBase(unittest.TestCase):
         try:
             fn()
             self.fail("Mirror did not except when the server died")
-        except SSHException as ex:
-            self.assertEqual("Server connection dropped: ", str(ex))
         except OSError as ex:
             self.assertEqual("Socket is closed", str(ex))
-        except EOFError:
-            pass
+            self.mirrorer.conn.close()
+        except (SSHException, ConnectionException, EOFError, socket.timeout):
+            self.mirrorer.conn.close()
 
     @classmethod
     def setUpClass(cls):
