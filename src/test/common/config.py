@@ -1,6 +1,6 @@
-from collections import OrderedDict
-from os.path import isdir, join
 import json
+from collections import OrderedDict
+from os.path import join
 
 from config import REPO_ROOT
 

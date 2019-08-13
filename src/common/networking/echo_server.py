@@ -1,7 +1,5 @@
-import signal
 import socket
-import threading
-from threading import Lock, Event
+from threading import Event
 
 from common import ONE_KB
 from common.log import arg_parser_with_logs, get_logger

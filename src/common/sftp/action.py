@@ -1,11 +1,10 @@
 from collections import OrderedDict
-from os import makedirs, path, rmdir, remove, removedirs, stat
-from os.path import exists
+from os import makedirs, remove
 from shutil import rmtree
 from stat import S_ISDIR, S_ISREG
 
-from common.sftp.action_codes import SFTPActionCodes
 from common.log import get_logger
+from common.sftp.action_codes import SFTPActionCodes
 
 logger = get_logger(__name__)
 

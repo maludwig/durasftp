@@ -2,7 +2,6 @@
 
 import os
 import re
-import stat
 from stat import S_IXUSR
 
 from common.log import arg_parser_with_logs, get_logger
