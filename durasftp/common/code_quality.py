@@ -4,8 +4,8 @@ import os
 import re
 from stat import S_IXUSR
 
-from common.log import arg_parser_with_logs, get_logger
-from config import REPO_ROOT
+from durasftp.common.log import arg_parser_with_logs, get_logger
+from durasftp.config import REPO_ROOT
 
 SHEBANG_LINE = "#!/usr/bin/env python\n"
 

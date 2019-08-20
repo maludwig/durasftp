@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-import socket
 import unittest
 
 from timeout_decorator import timeout
 
-from common import empty_dir
-from common.log import get_logger
-from common.sftp.action_codes import SFTPActionCodes
-from common.sftp.mirrorer import Mirrorer
+from durasftp.common import empty_dir
+from durasftp.common.log import get_logger
+from durasftp.common.networking import ANY_RANDOM_AVAILABLE_PORT
+from durasftp.common.networking.port_forwarder import start_forwarding, stop_forwarding
+from durasftp.common.sftp.action_codes import SFTPActionCodes
+from durasftp.common.sftp.mirrorer import Mirrorer
+from durasftp.config import REPO_ROOT
 from test.common.config import LOCAL_BASE, SFTP_BASE, SFTP_HOST, SFTP_USER, SFTP_PASS, SFTP_PORT
-from config import REPO_ROOT
-from common.networking.port_forwarder import start_forwarding, stop_forwarding
-from common.networking import ANY_RANDOM_AVAILABLE_PORT
+from test.common.sftp.container import restart_container
 from test.common.sftp.mirrorer_test import TestMirrorerBase
 
 """
@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 
 # FORWARDING_PORT = 10022
 
-BASE_TIMEOUT = 60
+BASE_TIMEOUT = 120
 
 
 class TestMirrorerShittyNetwork(TestMirrorerBase):
@@ -44,6 +44,7 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
     """
 
     def setUp(self):
+        restart_container()
         logger.info("In Shitty setUp")
         # Dangerous function calls
         if not LOCAL_BASE.startswith(REPO_ROOT):
@@ -80,6 +81,7 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
             self.fail("Mirror did not timeout when the network got infinitely slow")
 
         self.make_remote_test_file("/test.txt")
+        # logger.info("First mirror")
         self.mirrorer.mirror_from_remote()
         logger.info("Cutting speed to 0kbps")
         self.kbps = self.forwarder.adjust_kbps(0)
@@ -98,6 +100,7 @@ class TestMirrorerShittyNetwork(TestMirrorerBase):
             self.fail("Mirror did not timeout when the network got infinitely slow")
 
         self.make_remote_test_file("/test.txt")
+        # logger.info("First mirror")
         self.mirrorer.mirror_from_remote()
         logger.info("Cutting speed to 0kbps for current connection")
         self.kbps = self.forwarder.adjust_kbps(0, adjust_future_connections=False)

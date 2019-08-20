@@ -1,7 +1,7 @@
 import argparse
 import logging
 
-from common.log import set_log_level
+from durasftp.common.log import set_log_level
 
 
 class LogLevelAction(argparse.Action):

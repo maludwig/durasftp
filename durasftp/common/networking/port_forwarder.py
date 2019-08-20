@@ -5,10 +5,10 @@ import socket
 from threading import Event
 from time import sleep
 
-from common import ONE_KB
-from common.log import arg_parser_with_logs, get_logger
-from common.networking import INFINTE_SPEED
-from common.networking.stoppable_thread import StoppableThread
+from durasftp.common import ONE_KB
+from durasftp.common.log import arg_parser_with_logs, get_logger
+from durasftp.common.networking import INFINTE_SPEED
+from durasftp.common.networking.stoppable_thread import StoppableThread
 
 all_threads = []
 

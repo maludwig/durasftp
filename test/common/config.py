@@ -2,7 +2,7 @@ import json
 from collections import OrderedDict
 from os.path import join
 
-from config import REPO_ROOT
+from durasftp.config import REPO_ROOT
 
 # NOTE: The hostname "localhost" resolves to both IPv6 and IPv4 addresses, causing a warning in paramiko
 SFTP_HOST = "127.0.0.1"

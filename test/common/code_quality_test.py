@@ -1,7 +1,7 @@
 import unittest
 
-from common.code_quality import get_all_issues
-from common.log import get_logger
+from durasftp.common.code_quality import get_all_issues
+from durasftp.common.log import get_logger
 
 logger = get_logger(__name__)
 

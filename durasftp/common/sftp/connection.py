@@ -5,7 +5,7 @@ import pysftp
 from paramiko import SSHException
 from pysftp import ConnectionException
 
-from common.log import get_logger
+from durasftp.common.log import get_logger
 
 logger = get_logger(__name__)
 
@@ -17,11 +17,12 @@ def retry_on_fail(fn):
                 logger.info("Running {}()".format(fn.__name__))
                 return fn(self, *args, **kwargs)
             except (AttributeError, SSHException, ConnectionRefusedError, socket.gaierror, socket.timeout) as ex:
-                print(ex)
+                logger.warning(ex)
                 if attempt_num == self.max_attempts - 1:
+                    logger.error("Failed {}(), attempt {} of {}".format(fn.__name__, attempt_num, self.max_attempts))
                     raise ex
                 else:
-                    logger.warning("Retrying {}()".format(fn.__name__))
+                    logger.warning("Retrying {}(), attempt {} of {}".format(fn.__name__, attempt_num, self.max_attempts))
                     self.reconnect()
     return wrapper
 
@@ -53,7 +54,7 @@ class DurableSFTPConnection(pysftp.Connection):
                 self._transport.get_security_options().ciphers = ciphers
         except (AttributeError, SSHException, ConnectionRefusedError, socket.gaierror, socket.timeout) as ex:
             # couldn't connect
-            print(ex)
+            logger.critical(ex)
             if isinstance(self._sock, socket.socket):
                 self._sock.close()
             raise ConnectionException(host, port)

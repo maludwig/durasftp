@@ -1,5 +1,5 @@
 import argparse
-from common.log import set_log_file_path
+from durasftp.common.log import set_log_file_path
 
 
 class LogFileAction(argparse.Action):

@@ -14,11 +14,11 @@ from os.path import join, isdir, realpath
 import arrow
 import pysftp
 
-from common.log import add_logger_args, get_logger
-from common.sftp.action import SFTPAction
-from common.sftp.action_codes import SFTPActionCodes
-from common.sftp.action_list import SFTPActionList
-from common.sftp.connection import DurableSFTPConnection
+from durasftp.common.log import add_logger_args, get_logger
+from durasftp.common.sftp.action import SFTPAction
+from durasftp.common.sftp.action_codes import SFTPActionCodes
+from durasftp.common.sftp.action_list import SFTPActionList
+from durasftp.common.sftp.connection import DurableSFTPConnection
 
 EPILOG = __doc__
 
@@ -219,8 +219,6 @@ def parse_arguments():
 
 if __name__ == "__main__":
     args = parse_arguments()
-    print(vars(args))
-    # exit()
     mirrorer = Mirrorer(
         local_base=args.local_base,
         host=args.host,
@@ -231,7 +229,7 @@ if __name__ == "__main__":
         private_key_pass=args.private_key_pass,
     )
     mirrorer.mirror_from_remote(dry_run=False)
-    filtered_stuff = mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.LMKDIR])
+    filtered_stuff = mirrorer.action_list
     for remote_path, action in filtered_stuff:
         print(action)
     mirrorer.close()

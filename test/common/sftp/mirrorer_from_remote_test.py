@@ -1,9 +1,9 @@
 import unittest
 from os import stat, utime, urandom
 
-from common import ONE_MB
-from common.log import get_logger
-from common.sftp.action_codes import SFTPActionCodes
+from durasftp.common import ONE_MB
+from durasftp.common.log import get_logger
+from durasftp.common.sftp.action_codes import SFTPActionCodes
 from test.common.sftp.mirrorer_test import TestMirrorerBase
 
 """

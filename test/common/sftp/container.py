@@ -9,11 +9,11 @@ import paramiko
 from docker.errors import NotFound
 from paramiko.packet import Packetizer
 
-from common.log import get_logger, add_logger_args
+from durasftp.common.log import get_logger, add_logger_args
 from test.common.config import SFTP_PASS, SFTP_PORT, SFTP_USER, SFTP_HOST, SFTP_MOUNT
 
 CONTAINER_NAME = "test_sftp"
-MAX_ATTEMPTS = 20
+MAX_ATTEMPTS = 50
 
 logger = get_logger(__name__)
 

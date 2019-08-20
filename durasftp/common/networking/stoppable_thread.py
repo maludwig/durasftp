@@ -2,7 +2,7 @@ import signal
 import threading
 from threading import Event, Lock
 
-from common.log import get_logger
+from durasftp.common.log import get_logger
 
 global_stop_event = Event()
 mutex = Lock()

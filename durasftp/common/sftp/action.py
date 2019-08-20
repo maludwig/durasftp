@@ -3,8 +3,8 @@ from os import makedirs, remove
 from shutil import rmtree
 from stat import S_ISDIR, S_ISREG
 
-from common.log import get_logger
-from common.sftp.action_codes import SFTPActionCodes
+from durasftp.common.log import get_logger
+from durasftp.common.sftp.action_codes import SFTPActionCodes
 
 logger = get_logger(__name__)
 
@@ -67,6 +67,7 @@ class SFTPAction:
             makedirs(self.local_path, exist_ok=True)
 
     def run_get(self, dry_run):
+        logger.info("run_get: {}".format(self.remote_path))
         if self.local_is_file:
             logger.info("Removing: {}".format(self.local_path))
             if not dry_run:

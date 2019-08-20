@@ -1,8 +1,8 @@
 from collections import OrderedDict
 from operator import itemgetter
 
-from common.sftp.action import SFTPAction
-from common.sftp.action_codes import SFTPActionCodes
+from durasftp.common.sftp.action import SFTPAction
+from durasftp.common.sftp.action_codes import SFTPActionCodes
 
 
 class SFTPActionList:

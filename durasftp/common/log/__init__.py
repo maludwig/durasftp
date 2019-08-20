@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from logging import CRITICAL, ERROR, WARNING, INFO, DEBUG
 from os import environ
 
-from common.log.log_formatter import LogFormatter
+from durasftp.common.log.log_formatter import LogFormatter
 
 NAME_TO_LOG_LEVEL = {"CRITICAL": CRITICAL, "ERROR": ERROR, "WARN": WARNING, "WARNING": WARNING, "INFO": INFO, "DEBUG": DEBUG}
 FORMAT_STRING = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"

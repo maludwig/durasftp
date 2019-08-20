@@ -7,10 +7,10 @@ from stat import S_ISDIR, S_ISREG
 from paramiko import SSHException
 from pysftp import ConnectionException
 
-from common import empty_dir, generate_file_sha1
-from common.log import get_logger
-from common.sftp.mirrorer import Mirrorer
-from config import REPO_ROOT
+from durasftp.common import empty_dir, generate_file_sha1
+from durasftp.common.log import get_logger
+from durasftp.common.sftp.mirrorer import Mirrorer
+from durasftp.config import REPO_ROOT
 from test.common.config import LOCAL_BASE, SFTP_HOST, SFTP_BASE, SFTP_PASS, SFTP_PORT, SFTP_USER
 from test.common.sftp.container import get_container
 

@@ -4,9 +4,9 @@ import unittest
 from os import makedirs
 from os.path import dirname
 
-from common.log import get_logger
-from common.sftp.action import SFTPAction
-from common.sftp.action_codes import SFTPActionCodes
+from durasftp.common.log import get_logger
+from durasftp.common.sftp.action import SFTPAction
+from durasftp.common.sftp.action_codes import SFTPActionCodes
 from test.common.config import SFTP_BASE
 from test.common.sftp.mirrorer_test import TestMirrorerBase
 
