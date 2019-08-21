@@ -34,7 +34,12 @@ class TestMirrorerFromRemote(TestMirrorerBase):
         self.assert_files_match(remote_path)
 
     def test_triple_file_mirror(self):
-        remote_paths = ["/temp.txt", "/one/two/temp.txt", "/one/two/thing.jpg", "/one/thing.jpg"]
+        remote_paths = [
+            "/temp.txt",
+            "/one/two/temp.txt",
+            "/one/two/thing.jpg",
+            "/one/thing.jpg",
+        ]
         all_path_sets = self.make_remote_content(remote_paths)
         self.mirrorer.mirror_from_remote(dry_run=True)
         for remote_path, local_path, sftp_path in all_path_sets:
@@ -44,25 +49,40 @@ class TestMirrorerFromRemote(TestMirrorerBase):
         for remote_path, local_path, sftp_path in all_path_sets:
             self.assert_files_match(remote_path)
 
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.GET])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.GET]
+        )
         self.assertEqual(4, len(get_actions))
-        lmkdir_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.LMKDIR])
+        lmkdir_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.LMKDIR]
+        )
         self.assertEqual(2, len(lmkdir_actions))
 
     def test_does_not_copy_twice(self):
-        remote_paths = ["/temp.txt", "/one/two/temp.txt", "/one/two/thing.jpg", "/one/thing.jpg"]
+        remote_paths = [
+            "/temp.txt",
+            "/one/two/temp.txt",
+            "/one/two/thing.jpg",
+            "/one/thing.jpg",
+        ]
         self.make_remote_content(remote_paths)
         self.mirrorer.mirror_from_remote()
 
         # Copies new files
-        remote_path, local_path, sftp_path = self.make_remote_test_file("/one/newthing.jpg")
+        remote_path, local_path, sftp_path = self.make_remote_test_file(
+            "/one/newthing.jpg"
+        )
         self.mirrorer.mirror_from_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.GET])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.GET]
+        )
         self.assertEqual(1, len(get_actions))
 
         # Remembers what was new
         self.mirrorer.mirror_from_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.GET])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.GET]
+        )
         self.assertEqual(0, len(get_actions))
 
         remote_file_stat = stat(sftp_path)
@@ -71,13 +91,17 @@ class TestMirrorerFromRemote(TestMirrorerBase):
             editedfile.write("!!!")
         utime(sftp_path, (remote_file_stat.st_atime, remote_file_stat.st_mtime))
         self.mirrorer.mirror_from_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.GET])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.GET]
+        )
         self.assertEqual(1, len(get_actions))
 
         # Copies files with the same length but a different same modification time
         utime(sftp_path, (remote_file_stat.st_atime, remote_file_stat.st_mtime + 1))
         self.mirrorer.mirror_from_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.GET])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.GET]
+        )
         self.assertEqual(1, len(get_actions))
 
     def test_it_handles_huge_files(self):
@@ -87,7 +111,9 @@ class TestMirrorerFromRemote(TestMirrorerBase):
         iterations = 3
 
         remote_path = "/big/huge.csv"
-        self.make_remote_test_file(remote_path, content=random_megabyte, iterations=iterations)
+        self.make_remote_test_file(
+            remote_path, content=random_megabyte, iterations=iterations
+        )
         self.mirrorer.mirror_from_remote()
         self.assert_files_match(remote_path)
 
@@ -97,7 +123,9 @@ class TestMirrorerFromRemote(TestMirrorerBase):
         self.mirrorer.mirror_from_remote(dry_run=True)
         self.assert_local_missing(remote_path)
         self.mirrorer.mirror_from_remote()
-        lmkdir_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.LMKDIR])
+        lmkdir_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.LMKDIR]
+        )
         self.assertEqual(3, len(lmkdir_actions))
         self.assert_local_has_dir(remote_path)
 

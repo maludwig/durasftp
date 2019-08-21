@@ -87,7 +87,9 @@ def start_container():
             break
         else:
             if attempt_num == MAX_ATTEMPTS - 1:
-                raise Exception("Timed out connecting to sftp://{}:{}/".format(SFTP_HOST, SFTP_PORT))
+                raise Exception(
+                    "Timed out connecting to sftp://{}:{}/".format(SFTP_HOST, SFTP_PORT)
+                )
     return svr
 
 

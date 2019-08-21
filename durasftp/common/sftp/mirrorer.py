@@ -41,7 +41,7 @@ class Mirrorer:
     WITH_PERMS = "WITH_PERMS"
 
     def __init__(self, local_base, options=[], timeout=15, **kwargs):
-        logger.info("Opening sftp://{}:{}".format(kwargs['host'], kwargs['port']))
+        logger.info("Opening sftp://{}:{}".format(kwargs["host"], kwargs["port"]))
         self.conn = DurableSFTPConnection(cnopts=cnopts, timeout=timeout, **kwargs)
         # Realpath here ensures that trailing slashes will not cause issues
         self.local_base = realpath(local_base)
@@ -49,11 +49,15 @@ class Mirrorer:
         self.remote_attr_tree = OrderedDict()
         self.local_attr_tree = OrderedDict()
         self.options = options
-        self.conn.listdir('/')
+        self.conn.listdir("/")
         if self.conn and self.conn._transport:
             transport = self.conn._transport
             sock = transport.sock
-            logger.info("Opened sftp://{}:{} on socket: {}".format(kwargs['host'], kwargs['port'], sock.fileno()))
+            logger.info(
+                "Opened sftp://{}:{} on socket: {}".format(
+                    kwargs["host"], kwargs["port"], sock.fileno()
+                )
+            )
 
     def rmtree(self, remote_dir):
         files_to_delete = []
@@ -75,7 +79,9 @@ class Mirrorer:
 
         # Dirs need their children deleted first, since they must be empty
         # By sorting the paths by length, we ensure that child directories are deleted first
-        sorted_dirs = sorted(dirs_to_delete, key=lambda sub_dir_path: len(sub_dir_path), reverse=True)
+        sorted_dirs = sorted(
+            dirs_to_delete, key=lambda sub_dir_path: len(sub_dir_path), reverse=True
+        )
         for remote_dir_path in sorted_dirs:
             logger.info("Removing Dir: {}".format(remote_dir_path))
             self.conn.rmdir(remote_dir_path)
@@ -95,7 +101,10 @@ class Mirrorer:
                 local_size = local_stat.st_size
                 remote_modified_time = arrow.get(int(remote_entry.st_mtime))
                 remote_size = remote_entry.st_size
-                if local_modified_time == remote_modified_time and local_size == remote_size:
+                if (
+                    local_modified_time == remote_modified_time
+                    and local_size == remote_size
+                ):
                     return True
                 else:
                     return False
@@ -139,18 +148,40 @@ class Mirrorer:
             # Entry exists locally
             local_entry = self.local_attr_tree[remote_path]
             if self.entries_match(local_entry, remote_entry):
-                return SFTPAction(self, SFTPActionCodes.OK, remote_path, local_entry=local_entry, remote_entry=remote_entry)
+                return SFTPAction(
+                    self,
+                    SFTPActionCodes.OK,
+                    remote_path,
+                    local_entry=local_entry,
+                    remote_entry=remote_entry,
+                )
             else:
                 if entry_is_dir(remote_entry):
-                    return SFTPAction(self, SFTPActionCodes.LMKDIR, remote_path, local_entry=local_entry, remote_entry=remote_entry)
+                    return SFTPAction(
+                        self,
+                        SFTPActionCodes.LMKDIR,
+                        remote_path,
+                        local_entry=local_entry,
+                        remote_entry=remote_entry,
+                    )
                 elif entry_is_file(remote_entry):
-                    return SFTPAction(self, SFTPActionCodes.GET, remote_path, local_entry=local_entry, remote_entry=remote_entry)
+                    return SFTPAction(
+                        self,
+                        SFTPActionCodes.GET,
+                        remote_path,
+                        local_entry=local_entry,
+                        remote_entry=remote_entry,
+                    )
         else:
             # Entry does not exist locally
             if entry_is_dir(remote_entry):
-                return SFTPAction(self, SFTPActionCodes.LMKDIR, remote_path, remote_entry=remote_entry)
+                return SFTPAction(
+                    self, SFTPActionCodes.LMKDIR, remote_path, remote_entry=remote_entry
+                )
             elif entry_is_file(remote_entry):
-                return SFTPAction(self, SFTPActionCodes.GET, remote_path, remote_entry=remote_entry)
+                return SFTPAction(
+                    self, SFTPActionCodes.GET, remote_path, remote_entry=remote_entry
+                )
 
     def action_to_remote_by_path(self, remote_path):
         local_entry = self.local_attr_tree[remote_path]
@@ -158,18 +189,40 @@ class Mirrorer:
             # Entry exists remotely
             remote_entry = self.remote_attr_tree[remote_path]
             if self.entries_match(local_entry, remote_entry):
-                return SFTPAction(self, SFTPActionCodes.OK, remote_path, local_entry=local_entry, remote_entry=remote_entry)
+                return SFTPAction(
+                    self,
+                    SFTPActionCodes.OK,
+                    remote_path,
+                    local_entry=local_entry,
+                    remote_entry=remote_entry,
+                )
             else:
                 if local_entry.is_dir():
-                    return SFTPAction(self, SFTPActionCodes.RMKDIR, remote_path, local_entry=local_entry, remote_entry=remote_entry)
+                    return SFTPAction(
+                        self,
+                        SFTPActionCodes.RMKDIR,
+                        remote_path,
+                        local_entry=local_entry,
+                        remote_entry=remote_entry,
+                    )
                 elif local_entry.is_file():
-                    return SFTPAction(self, SFTPActionCodes.PUT, remote_path, local_entry=local_entry, remote_entry=remote_entry)
+                    return SFTPAction(
+                        self,
+                        SFTPActionCodes.PUT,
+                        remote_path,
+                        local_entry=local_entry,
+                        remote_entry=remote_entry,
+                    )
         else:
             # Entry does not exist remotely
             if local_entry.is_dir():
-                return SFTPAction(self, SFTPActionCodes.RMKDIR, remote_path, local_entry=local_entry)
+                return SFTPAction(
+                    self, SFTPActionCodes.RMKDIR, remote_path, local_entry=local_entry
+                )
             elif local_entry.is_file():
-                return SFTPAction(self, SFTPActionCodes.PUT, remote_path, local_entry=local_entry)
+                return SFTPAction(
+                    self, SFTPActionCodes.PUT, remote_path, local_entry=local_entry
+                )
 
     def actions_to_mirror_from_remote(self):
         self.load_stat_trees()
@@ -204,15 +257,26 @@ class Mirrorer:
 
 
 def parse_arguments():
-    parser = ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG)
-    parser.add_argument("--local-base", help="Local directory to mirror with", required=True)
+    parser = ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter, epilog=EPILOG
+    )
+    parser.add_argument(
+        "--local-base", help="Local directory to mirror with", required=True
+    )
     parser.add_argument("--host", help="SFTP server IP/FQDN", required=True)
     parser.add_argument("--username", help="SFTP username", required=True)
     parser.add_argument("--password", help="SFTP password")
     parser.add_argument("--private-key", help="Path to a private key file")
-    parser.add_argument("--private-key-pass", help="Password to an encrypted private key file")
+    parser.add_argument(
+        "--private-key-pass", help="Password to an encrypted private key file"
+    )
     parser.add_argument("--port", default=22, help="SFTP port", type=int)
-    parser.add_argument("--dry-run", action="store_true", default=False, help="Don't actually do anything, just print what would be done")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Don't actually do anything, just print what would be done",
+    )
     add_logger_args(parser)
     return parser.parse_args()
 

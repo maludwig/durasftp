@@ -34,7 +34,12 @@ class TestMirrorerToRemote(TestMirrorerBase):
         self.assert_files_match(remote_path)
 
     def test_triple_file_mirror(self):
-        remote_paths = ["/temp.txt", "/one/two/temp.txt", "/one/two/thing.jpg", "/one/thing.jpg"]
+        remote_paths = [
+            "/temp.txt",
+            "/one/two/temp.txt",
+            "/one/two/thing.jpg",
+            "/one/thing.jpg",
+        ]
         all_path_sets = self.make_local_content(remote_paths)
         self.mirrorer.mirror_to_remote(dry_run=True)
         for remote_path, local_path, sftp_path in all_path_sets:
@@ -44,25 +49,40 @@ class TestMirrorerToRemote(TestMirrorerBase):
         for remote_path, local_path, sftp_path in all_path_sets:
             self.assert_files_match(remote_path)
 
-        put_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.PUT])
+        put_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.PUT]
+        )
         self.assertEqual(4, len(put_actions))
-        rmkdir_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.RMKDIR])
+        rmkdir_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.RMKDIR]
+        )
         self.assertEqual(2, len(rmkdir_actions))
 
     def test_does_not_copy_twice(self):
-        remote_paths = ["/temp.txt", "/one/two/temp.txt", "/one/two/thing.jpg", "/one/thing.jpg"]
+        remote_paths = [
+            "/temp.txt",
+            "/one/two/temp.txt",
+            "/one/two/thing.jpg",
+            "/one/thing.jpg",
+        ]
         self.make_local_content(remote_paths)
         self.mirrorer.mirror_to_remote()
 
         # Copies new files
-        remote_path, local_path, sftp_path = self.make_local_test_file("/one/newthing.jpg")
+        remote_path, local_path, sftp_path = self.make_local_test_file(
+            "/one/newthing.jpg"
+        )
         self.mirrorer.mirror_to_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.PUT])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.PUT]
+        )
         self.assertEqual(1, len(get_actions))
 
         # Remembers what was new
         self.mirrorer.mirror_to_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.PUT])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.PUT]
+        )
         self.assertEqual(0, len(get_actions))
 
         remote_file_stat = stat(sftp_path)
@@ -71,13 +91,17 @@ class TestMirrorerToRemote(TestMirrorerBase):
             editedfile.write("!!!")
         utime(sftp_path, (remote_file_stat.st_atime, remote_file_stat.st_mtime))
         self.mirrorer.mirror_to_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.PUT])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.PUT]
+        )
         self.assertEqual(1, len(get_actions))
 
         # Copies files with the same length but a different same modification time
         utime(sftp_path, (remote_file_stat.st_atime, remote_file_stat.st_mtime + 1))
         self.mirrorer.mirror_to_remote()
-        get_actions = self.mirrorer.action_list.filtered_items(codes=[SFTPActionCodes.PUT])
+        get_actions = self.mirrorer.action_list.filtered_items(
+            codes=[SFTPActionCodes.PUT]
+        )
         self.assertEqual(1, len(get_actions))
 
     def test_it_handles_huge_files(self):
@@ -87,7 +111,9 @@ class TestMirrorerToRemote(TestMirrorerBase):
         iterations = 3
 
         remote_path = "/big/huge.csv"
-        self.make_local_test_file(remote_path, content=random_megabyte, iterations=iterations)
+        self.make_local_test_file(
+            remote_path, content=random_megabyte, iterations=iterations
+        )
         self.mirrorer.mirror_to_remote()
         self.assert_files_match(remote_path)
 

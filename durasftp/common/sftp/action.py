@@ -10,7 +10,15 @@ logger = get_logger(__name__)
 
 
 class SFTPAction:
-    def __init__(self, mirrorer, action_code, remote_path, local_entry=None, remote_entry=None, **kwargs):
+    def __init__(
+        self,
+        mirrorer,
+        action_code,
+        remote_path,
+        local_entry=None,
+        remote_entry=None,
+        **kwargs
+    ):
         self.mirrorer = mirrorer
         self.action_code = action_code
         self.remote_path = remote_path
@@ -78,7 +86,9 @@ class SFTPAction:
                 rmtree(self.local_path)
         logger.info("Downloading: {}".format(self.remote_path))
         if not dry_run:
-            self.mirrorer.conn.get(self.remote_path, self.local_path, preserve_mtime=True)
+            self.mirrorer.conn.get(
+                self.remote_path, self.local_path, preserve_mtime=True
+            )
 
     def run_rmkdir(self, dry_run):
         if self.remote_is_file:
@@ -100,13 +110,17 @@ class SFTPAction:
                 self.mirrorer.rmtree(self.remote_path)
         logger.info("Downloading: {}".format(self.remote_path))
         if not dry_run:
-            self.mirrorer.conn.put(self.local_path, self.remote_path, preserve_mtime=True)
+            self.mirrorer.conn.put(
+                self.local_path, self.remote_path, preserve_mtime=True
+            )
 
     def to_json(self):
         return self.to_dict()
 
     def to_dict(self):
-        result_dict = OrderedDict([("action_code", self.action_code), ("path", self.remote_path)])
+        result_dict = OrderedDict(
+            [("action_code", self.action_code), ("path", self.remote_path)]
+        )
         result_dict.update(self.kwargs)
         return result_dict
 

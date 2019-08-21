@@ -20,7 +20,9 @@ class EchoThread(StoppableThread):
         self.packet_size = ONE_KB
 
     def run(self):
-        self.log_info("Echoing a connection with C:{}".format(self.connected_socket.fileno()))
+        self.log_info(
+            "Echoing a connection with C:{}".format(self.connected_socket.fileno())
+        )
         bytes_received = b" "
         try:
             while self.stopped() is False and bytes_received:
@@ -73,7 +75,9 @@ class EchoListeningThread(StoppableThread):
             raise OSError("ERROR: {}, Port: {}".format(str(ex), self.local_port))
         dock_socket.listen(5)
         self.local_port = dock_socket.getsockname()[1]
-        self.log_info("Listening on {} with D:{}".format(self.local_port, dock_socket.fileno()))
+        self.log_info(
+            "Listening on {} with D:{}".format(self.local_port, dock_socket.fileno())
+        )
         self.is_listening.set()
         while self.stopped() is False:
             try:
@@ -106,8 +110,17 @@ def stop_all_threads(*args):
     logger.info("All threads stopped")
 
 
-def start_forwarding(local_port, remote_host, remote_port, kbps=INFINTE_SPEED, packet_drop_rate=0, connecting_lag=0):
-    listening_thread = ListeningThread(local_port, remote_host, remote_port, kbps, packet_drop_rate, connecting_lag)
+def start_forwarding(
+    local_port,
+    remote_host,
+    remote_port,
+    kbps=INFINTE_SPEED,
+    packet_drop_rate=0,
+    connecting_lag=0,
+):
+    listening_thread = ListeningThread(
+        local_port, remote_host, remote_port, kbps, packet_drop_rate, connecting_lag
+    )
     all_threads.append(listening_thread)
     listening_thread.start()
     listening_thread.is_listening.wait(2)
@@ -123,9 +136,31 @@ if __name__ == "__main__":
     parser.add_argument("local_port", type=int, help="The local port to open")
     parser.add_argument("remote_host", type=str, help="The remote host to forward to")
     parser.add_argument("remote_port", type=int, help="The remote port to connect to")
-    parser.add_argument("--packet-drop-rate", default=0, type=float, help="What fraction of packets to drop (ex. 0.2 will drop one in five packets)")
-    parser.add_argument("--kbps", default=INFINTE_SPEED, type=float, help="The maximum speed to forward packets at")
-    parser.add_argument("--connecting-lag", default=0, type=float, help="The amount of seconds to wait before actually connecting")
+    parser.add_argument(
+        "--packet-drop-rate",
+        default=0,
+        type=float,
+        help="What fraction of packets to drop (ex. 0.2 will drop one in five packets)",
+    )
+    parser.add_argument(
+        "--kbps",
+        default=INFINTE_SPEED,
+        type=float,
+        help="The maximum speed to forward packets at",
+    )
+    parser.add_argument(
+        "--connecting-lag",
+        default=0,
+        type=float,
+        help="The amount of seconds to wait before actually connecting",
+    )
     args = parser.parse_args()
-    listener_thread = start_forwarding(args.local_port, args.remote_host, args.remote_port, args.kbps, args.packet_drop_rate, args.connecting_lag)
+    listener_thread = start_forwarding(
+        args.local_port,
+        args.remote_host,
+        args.remote_port,
+        args.kbps,
+        args.packet_drop_rate,
+        args.connecting_lag,
+    )
     listener_thread.join()

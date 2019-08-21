@@ -11,7 +11,14 @@ from durasftp.common import empty_dir, generate_file_sha1
 from durasftp.common.log import get_logger
 from durasftp.common.sftp.mirrorer import Mirrorer
 from durasftp.config import REPO_ROOT
-from test.common.config import LOCAL_BASE, SFTP_HOST, SFTP_BASE, SFTP_PASS, SFTP_PORT, SFTP_USER
+from test.common.config import (
+    LOCAL_BASE,
+    SFTP_HOST,
+    SFTP_BASE,
+    SFTP_PASS,
+    SFTP_PORT,
+    SFTP_USER,
+)
 from test.common.sftp.container import get_container
 
 """
@@ -78,10 +85,16 @@ class TestMirrorerBase(unittest.TestCase):
             self.assertEqual(local_stat.st_size, sftp_stat.st_size)
             local_modification_timestamp = int(local_stat.st_mtime)
             remote_modification_timestamp = int(sftp_stat.st_mtime)
-            self.assertEqual(local_modification_timestamp, remote_modification_timestamp)
-            self.assertEqual(generate_file_sha1(local_path), generate_file_sha1(sftp_path))
+            self.assertEqual(
+                local_modification_timestamp, remote_modification_timestamp
+            )
+            self.assertEqual(
+                generate_file_sha1(local_path), generate_file_sha1(sftp_path)
+            )
 
-    def make_local_test_file(self, remote_path, content=b"Hello world", iterations=1, suppress_check=False):
+    def make_local_test_file(
+        self, remote_path, content=b"Hello world", iterations=1, suppress_check=False
+    ):
         remote_path, local_path, sftp_path = paths_from_remote(remote_path)
         parent_dir_path = dirname(local_path)
         makedirs(parent_dir_path, exist_ok=True)
@@ -93,7 +106,9 @@ class TestMirrorerBase(unittest.TestCase):
                 self.ensure_local_path_is_visible(content_path)
         return remote_path, local_path, sftp_path
 
-    def make_remote_test_file(self, remote_path, content=b"Hello world", iterations=1, suppress_check=False):
+    def make_remote_test_file(
+        self, remote_path, content=b"Hello world", iterations=1, suppress_check=False
+    ):
         remote_path, local_path, sftp_path = paths_from_remote(remote_path)
         parent_dir_path = dirname(sftp_path)
         makedirs(parent_dir_path, exist_ok=True)
@@ -131,7 +146,9 @@ class TestMirrorerBase(unittest.TestCase):
 
         all_remote_paths = set()
         for content_path in remote_paths:
-            all_remote_paths = all_remote_paths.union(self.entry_with_parents(content_path))
+            all_remote_paths = all_remote_paths.union(
+                self.entry_with_parents(content_path)
+            )
         for content_path in all_remote_paths:
             self.ensure_remote_path_is_visible(content_path)
         return return_list
@@ -168,7 +185,11 @@ class TestMirrorerBase(unittest.TestCase):
                 break
             except FileNotFoundError:
                 if x == MAX_ATTEMPTS - 1:
-                    raise Exception("Reached max attempts of {} for path {}".format(MAX_ATTEMPTS, content_path))
+                    raise Exception(
+                        "Reached max attempts of {} for path {}".format(
+                            MAX_ATTEMPTS, content_path
+                        )
+                    )
 
     def ensure_local_path_is_visible(self, content_path):
         # Sometimes it can take a fraction of a moment to create things,
@@ -189,7 +210,11 @@ class TestMirrorerBase(unittest.TestCase):
                 break
             except FileNotFoundError:
                 if x == MAX_ATTEMPTS - 1:
-                    raise Exception("Reached max attempts of {} for path {}".format(MAX_ATTEMPTS, content_path))
+                    raise Exception(
+                        "Reached max attempts of {} for path {}".format(
+                            MAX_ATTEMPTS, content_path
+                        )
+                    )
 
     def expect_sftp_failure(self, fn):
         try:
@@ -211,21 +236,34 @@ class TestMirrorerBase(unittest.TestCase):
     def setUp(self):
         # Dangerous function calls
         if not LOCAL_BASE.startswith(REPO_ROOT):
-            raise Exception("The local SFTP mirror folder is not in your repo, I'm scared to rmtree")
+            raise Exception(
+                "The local SFTP mirror folder is not in your repo, I'm scared to rmtree"
+            )
         if not SFTP_BASE.startswith(REPO_ROOT):
-            raise Exception("The SFTP folder mount is not in your repo, I'm scared to rmtree")
+            raise Exception(
+                "The SFTP folder mount is not in your repo, I'm scared to rmtree"
+            )
         empty_dir(LOCAL_BASE)
         empty_dir(SFTP_BASE)
 
         # Be sure to do any deletes prior to opening a connection
-        self.mirrorer = Mirrorer(local_base=LOCAL_BASE, host=SFTP_HOST, username=SFTP_USER, password=SFTP_PASS, port=SFTP_PORT, timeout=3)
+        self.mirrorer = Mirrorer(
+            local_base=LOCAL_BASE,
+            host=SFTP_HOST,
+            username=SFTP_USER,
+            password=SFTP_PASS,
+            port=SFTP_PORT,
+            timeout=3,
+        )
 
     def tearDown(self):
         self.mirrorer.close()
 
     def test_entry_with_parents(self):
         all_parents = self.entry_with_parents("/some/nested/thing")
-        self.assertEqual(["/", "/some/", "/some/nested/", "/some/nested/thing"], all_parents)
+        self.assertEqual(
+            ["/", "/some/", "/some/nested/", "/some/nested/thing"], all_parents
+        )
 
         all_parents = self.entry_with_parents("/some/nested/")
         self.assertEqual(["/", "/some/", "/some/nested/"], all_parents)

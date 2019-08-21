@@ -8,8 +8,16 @@ class LogFileAction(argparse.Action):
     Example:
       python <script> --log-file <log-file-path>
     """
+
     def __init__(self, option_strings, dest, default=None, required=False, help=None):
-        super().__init__(option_strings=option_strings, dest=dest, nargs=1, default=default, required=required, help=help)
+        super().__init__(
+            option_strings=option_strings,
+            dest=dest,
+            nargs=1,
+            default=default,
+            required=required,
+            help=help,
+        )
 
     def __call__(self, parser, namespace, values, option_string=None):
         log_file_path = values[0]

@@ -12,6 +12,7 @@ class LogFormatter(Formatter):
     Example:
         [2019-01-02T16:45:06Z] [2019-01-02T09:45:06-07:00] - WARNING - mamba.example - Doing a thing
     """
+
     def usesTime(self):
         return True
 

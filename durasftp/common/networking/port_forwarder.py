@@ -16,7 +16,15 @@ logger = get_logger(__name__)
 
 
 class ListeningThread(StoppableThread):
-    def __init__(self, local_port, dest_host, dest_port, kbps=INFINTE_SPEED, packet_drop_rate=0, connecting_lag=0):
+    def __init__(
+        self,
+        local_port,
+        dest_host,
+        dest_port,
+        kbps=INFINTE_SPEED,
+        packet_drop_rate=0,
+        connecting_lag=0,
+    ):
         super().__init__()
         self.local_port = local_port
         self.dest_host = dest_host
@@ -35,8 +43,16 @@ class ListeningThread(StoppableThread):
             forwarding_thread.join()
 
     def run(self):
-        self.log_info("Listening on {}, forwarding to {}:{}".format(self.local_port, self.dest_host, self.dest_port))
-        self.log_debug("Still listening on {}, forwarding to {}:{}".format(self.local_port, self.dest_host, self.dest_port))
+        self.log_info(
+            "Listening on {}, forwarding to {}:{}".format(
+                self.local_port, self.dest_host, self.dest_port
+            )
+        )
+        self.log_debug(
+            "Still listening on {}, forwarding to {}:{}".format(
+                self.local_port, self.dest_host, self.dest_port
+            )
+        )
         dock_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         dock_socket.settimeout(1)
         try:
@@ -46,11 +62,17 @@ class ListeningThread(StoppableThread):
             raise OSError("ERROR: {}, Port: {}".format(str(ex), self.local_port))
         dock_socket.listen(5)
         self.local_port = dock_socket.getsockname()[1]
-        self.log_info("Listening on {} with D:{}".format(self.local_port, dock_socket.fileno()))
+        self.log_info(
+            "Listening on {} with D:{}".format(self.local_port, dock_socket.fileno())
+        )
         self.is_listening.set()
         while self.stopped() is False:
             try:
-                self.log_debug("Still accepting on {}, forwarding to {}:{}".format(self.local_port, self.dest_host, self.dest_port))
+                self.log_debug(
+                    "Still accepting on {}, forwarding to {}:{}".format(
+                        self.local_port, self.dest_host, self.dest_port
+                    )
+                )
                 client_socket = dock_socket.accept()[0]
                 client_socket.settimeout(1)
                 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -58,8 +80,12 @@ class ListeningThread(StoppableThread):
                 server_socket.connect((self.dest_host, self.dest_port))
                 sleep(self.connecting_lag)
                 self.log_debug("Taking mutex")
-                client_to_server_forwarding_thread = ForwardingThread(client_socket, server_socket, self.kbps, self.packet_drop_rate)
-                server_to_client_forwarding_thread = ForwardingThread(server_socket, client_socket, self.kbps, self.packet_drop_rate)
+                client_to_server_forwarding_thread = ForwardingThread(
+                    client_socket, server_socket, self.kbps, self.packet_drop_rate
+                )
+                server_to_client_forwarding_thread = ForwardingThread(
+                    server_socket, client_socket, self.kbps, self.packet_drop_rate
+                )
                 all_threads.append(client_to_server_forwarding_thread)
                 all_threads.append(server_to_client_forwarding_thread)
                 client_to_server_forwarding_thread.start()
@@ -86,7 +112,9 @@ class ListeningThread(StoppableThread):
 
 
 class ForwardingThread(StoppableThread):
-    def __init__(self, server_socket, client_socket, kbps=INFINTE_SPEED, packet_drop_rate=0):
+    def __init__(
+        self, server_socket, client_socket, kbps=INFINTE_SPEED, packet_drop_rate=0
+    ):
         super().__init__()
         self.server_socket = server_socket
         self.client_socket = client_socket
@@ -113,10 +141,18 @@ class ForwardingThread(StoppableThread):
             self.packet_size = int(ONE_KB * (kbps / 10))
 
     def run(self):
-        self.log_info("Forwarding a connection with S:{} and C:{}".format(self.server_socket.fileno(), self.client_socket.fileno()))
+        self.log_info(
+            "Forwarding a connection with S:{} and C:{}".format(
+                self.server_socket.fileno(), self.client_socket.fileno()
+            )
+        )
         bytes_received = b" "
         try:
-            while self.stopped() is False and bytes_received and self.server_socket.fileno() != -1:
+            while (
+                self.stopped() is False
+                and bytes_received
+                and self.server_socket.fileno() != -1
+            ):
                 self.log_debug("Not stopped and socket is connected")
                 try:
                     bytes_received = self.client_socket.recv(self.packet_size)
@@ -125,7 +161,9 @@ class ForwardingThread(StoppableThread):
                             if self.kbps != INFINTE_SPEED:
                                 sleep(self.seconds_between_packets)
                             if not self.randomly_drop_packet():
-                                self.log_debug("Sending string: {}".format(bytes_received))
+                                self.log_debug(
+                                    "Sending string: {}".format(bytes_received)
+                                )
                                 self.server_socket.sendall(bytes_received)
                             else:
                                 self.log_debug("Randomly dropped packet")
@@ -161,8 +199,17 @@ def stop_all_threads(*args):
     logger.info("All threads stopped")
 
 
-def start_forwarding(local_port, remote_host, remote_port, kbps=INFINTE_SPEED, packet_drop_rate=0, connecting_lag=0):
-    listening_thread = ListeningThread(local_port, remote_host, remote_port, kbps, packet_drop_rate, connecting_lag)
+def start_forwarding(
+    local_port,
+    remote_host,
+    remote_port,
+    kbps=INFINTE_SPEED,
+    packet_drop_rate=0,
+    connecting_lag=0,
+):
+    listening_thread = ListeningThread(
+        local_port, remote_host, remote_port, kbps, packet_drop_rate, connecting_lag
+    )
     all_threads.append(listening_thread)
     listening_thread.start()
     listening_thread.is_listening.wait(2)
@@ -178,9 +225,31 @@ if __name__ == "__main__":
     parser.add_argument("local_port", type=int, help="The local port to open")
     parser.add_argument("remote_host", type=str, help="The remote host to forward to")
     parser.add_argument("remote_port", type=int, help="The remote port to connect to")
-    parser.add_argument("--packet-drop-rate", default=0, type=float, help="What fraction of packets to drop (ex. 0.2 will drop one in five packets)")
-    parser.add_argument("--kbps", default=INFINTE_SPEED, type=float, help="The maximum speed to forward packets at")
-    parser.add_argument("--connecting-lag", default=0, type=float, help="The amount of seconds to wait before actually connecting")
+    parser.add_argument(
+        "--packet-drop-rate",
+        default=0,
+        type=float,
+        help="What fraction of packets to drop (ex. 0.2 will drop one in five packets)",
+    )
+    parser.add_argument(
+        "--kbps",
+        default=INFINTE_SPEED,
+        type=float,
+        help="The maximum speed to forward packets at",
+    )
+    parser.add_argument(
+        "--connecting-lag",
+        default=0,
+        type=float,
+        help="The amount of seconds to wait before actually connecting",
+    )
     args = parser.parse_args()
-    listener_thread = start_forwarding(args.local_port, args.remote_host, args.remote_port, args.kbps, args.packet_drop_rate, args.connecting_lag)
+    listener_thread = start_forwarding(
+        args.local_port,
+        args.remote_host,
+        args.remote_port,
+        args.kbps,
+        args.packet_drop_rate,
+        args.connecting_lag,
+    )
     listener_thread.join()

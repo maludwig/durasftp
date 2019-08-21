@@ -5,7 +5,14 @@ from os import environ
 
 from durasftp.common.log.log_formatter import LogFormatter
 
-NAME_TO_LOG_LEVEL = {"CRITICAL": CRITICAL, "ERROR": ERROR, "WARN": WARNING, "WARNING": WARNING, "INFO": INFO, "DEBUG": DEBUG}
+NAME_TO_LOG_LEVEL = {
+    "CRITICAL": CRITICAL,
+    "ERROR": ERROR,
+    "WARN": WARNING,
+    "WARNING": WARNING,
+    "INFO": INFO,
+    "DEBUG": DEBUG,
+}
 FORMAT_STRING = "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
 
 log_level_string = environ.get("LOG_LEVEL", "WARNING")
@@ -58,8 +65,18 @@ def add_logger_args(parser):
     from common.log.log_file_action import LogFileAction
     from common.log.log_level_action import LogLevelAction
 
-    parser.add_argument("-v", "--verbose", action=LogLevelAction, help="Increase log output, specify multiple times for extra output (ex. -vvv)")
-    parser.add_argument("-q", "--quiet", action=LogLevelAction, help="Less log output, -qqq for no logging")
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action=LogLevelAction,
+        help="Increase log output, specify multiple times for extra output (ex. -vvv)",
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action=LogLevelAction,
+        help="Less log output, -qqq for no logging",
+    )
     parser.add_argument("--log-file", action=LogFileAction, help="Path for a log file")
 
 

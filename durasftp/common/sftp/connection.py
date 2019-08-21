@@ -16,20 +16,48 @@ def retry_on_fail(fn):
             try:
                 logger.info("Running {}()".format(fn.__name__))
                 return fn(self, *args, **kwargs)
-            except (AttributeError, SSHException, ConnectionRefusedError, socket.gaierror, socket.timeout) as ex:
+            except (
+                AttributeError,
+                SSHException,
+                ConnectionRefusedError,
+                socket.gaierror,
+                socket.timeout,
+            ) as ex:
                 logger.warning(ex)
                 if attempt_num == self.max_attempts - 1:
-                    logger.error("Failed {}(), attempt {} of {}".format(fn.__name__, attempt_num, self.max_attempts))
+                    logger.error(
+                        "Failed {}(), attempt {} of {}".format(
+                            fn.__name__, attempt_num, self.max_attempts
+                        )
+                    )
                     raise ex
                 else:
-                    logger.warning("Retrying {}(), attempt {} of {}".format(fn.__name__, attempt_num, self.max_attempts))
+                    logger.warning(
+                        "Retrying {}(), attempt {} of {}".format(
+                            fn.__name__, attempt_num, self.max_attempts
+                        )
+                    )
                     self.reconnect()
+
     return wrapper
 
 
 class DurableSFTPConnection(pysftp.Connection):
-
-    def __init__(self, host, username=None, private_key=None, password=None, port=22, private_key_pass=None, ciphers=None, log=False, cnopts=None, default_path=None, timeout=15, max_attempts=3):
+    def __init__(
+        self,
+        host,
+        username=None,
+        private_key=None,
+        password=None,
+        port=22,
+        private_key_pass=None,
+        ciphers=None,
+        log=False,
+        cnopts=None,
+        default_path=None,
+        timeout=15,
+        max_attempts=3,
+    ):
         logger.debug("New SFTPConnection for sftp://{}:{}".format(host, port))
         self._timeout = timeout
         self._sock = None
@@ -39,7 +67,18 @@ class DurableSFTPConnection(pysftp.Connection):
         self.password = password
         self.private_key = private_key
         self.private_key_pass = private_key_pass
-        super().__init__(host, username, private_key, password, port, private_key_pass, ciphers, log, cnopts, default_path)
+        super().__init__(
+            host,
+            username,
+            private_key,
+            password,
+            port,
+            private_key_pass,
+            ciphers,
+            log,
+            cnopts,
+            default_path,
+        )
         self.timeout = self._timeout
 
     def _start_transport(self, host, port):
@@ -52,7 +91,13 @@ class DurableSFTPConnection(pysftp.Connection):
             if self._cnopts.ciphers is not None:
                 ciphers = self._cnopts.ciphers
                 self._transport.get_security_options().ciphers = ciphers
-        except (AttributeError, SSHException, ConnectionRefusedError, socket.gaierror, socket.timeout) as ex:
+        except (
+            AttributeError,
+            SSHException,
+            ConnectionRefusedError,
+            socket.gaierror,
+            socket.timeout,
+        ) as ex:
             # couldn't connect
             logger.critical(ex)
             if isinstance(self._sock, socket.socket):
@@ -92,7 +137,14 @@ class DurableSFTPConnection(pysftp.Connection):
         return super().getfo(remotepath, flo, callback)
 
     @retry_on_fail
-    def put(self, localpath, remotepath=None, callback=None, confirm=True, preserve_mtime=False):
+    def put(
+        self,
+        localpath,
+        remotepath=None,
+        callback=None,
+        confirm=True,
+        preserve_mtime=False,
+    ):
         return super().put(localpath, remotepath, callback, confirm, preserve_mtime)
 
     @retry_on_fail
@@ -132,11 +184,11 @@ class DurableSFTPConnection(pysftp.Connection):
         return super().getcwd()
 
     @retry_on_fail
-    def listdir(self, remotepath='.'):
+    def listdir(self, remotepath="."):
         return super().listdir(remotepath)
 
     @retry_on_fail
-    def listdir_attr(self, remotepath='.'):
+    def listdir_attr(self, remotepath="."):
         return super().listdir_attr(remotepath)
 
     @retry_on_fail
@@ -188,7 +240,7 @@ class DurableSFTPConnection(pysftp.Connection):
         return super().close()
 
     @retry_on_fail
-    def open(self, remote_file, mode='r', bufsize=-1):
+    def open(self, remote_file, mode="r", bufsize=-1):
         return super().open(remote_file, mode, bufsize)
 
     @retry_on_fail
@@ -234,4 +286,3 @@ class DurableSFTPConnection(pysftp.Connection):
     @retry_on_fail
     def remote_server_key(self):
         return super().remote_server_key()
-

@@ -83,13 +83,25 @@ class TestSFTPAction(TestMirrorerBase):
         self.mirrorer.load_stat_trees()
 
         remote_entry = self.mirrorer.remote_attr_tree[remote_file_path]
-        action = SFTPAction(self.mirrorer, SFTPActionCodes.GET, remote_file_path, local_entry=None, remote_entry=remote_entry)
+        action = SFTPAction(
+            self.mirrorer,
+            SFTPActionCodes.GET,
+            remote_file_path,
+            local_entry=None,
+            remote_entry=remote_entry,
+        )
         action.run(callback=counter)
         self.assert_local_has_file(remote_file_path)
         self.assertEqual([action], actions)
 
         remote_entry = self.mirrorer.remote_attr_tree[remote_dir_path]
-        action = SFTPAction(self.mirrorer, SFTPActionCodes.LMKDIR, remote_dir_path, local_entry=None, remote_entry=remote_entry)
+        action = SFTPAction(
+            self.mirrorer,
+            SFTPActionCodes.LMKDIR,
+            remote_dir_path,
+            local_entry=None,
+            remote_entry=remote_entry,
+        )
         action.run(callback=counter)
         self.assert_local_has_dir(remote_dir_path)
         self.assertEqual(2, len(actions))
