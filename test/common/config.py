@@ -7,7 +7,7 @@ from durasftp.config import REPO_ROOT
 # NOTE: The hostname "localhost" resolves to both IPv6 and IPv4 addresses, causing a warning in paramiko
 SFTP_HOST = "127.0.0.1"
 
-SFTP_USER = "dev_ms_source"
+SFTP_USER = "testuser"
 SFTP_PASS = "ULTRASECUREPASSWORD"
 SFTP_PORT = 2022
 SFTP_MOUNT = join(REPO_ROOT, "tmp/_sftp")
