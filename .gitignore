@@ -3,3 +3,7 @@ temp.py
 
 __pycache__/
 /tmp
+/build
+/dist
+/durasftp.egg-info
+
