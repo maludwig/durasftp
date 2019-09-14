@@ -22,9 +22,12 @@ from durasftp.common.sftp.connection import DurableSFTPConnection
 
 EPILOG = __doc__
 
+# Accepts any host key
 cnopts = pysftp.CnOpts()
 cnopts.hostkeys = None
 
+# Leverage the logger module to avoid print statements
+#
 logger = get_logger(__name__)
 
 
@@ -60,6 +63,10 @@ class Mirrorer:
             )
 
     def rmtree(self, remote_dir):
+        """
+        Deletes all files and directories on a remote server recursively
+        :param remote_dir: The remote directory to delete
+        """
         files_to_delete = []
         dirs_to_delete = []
 
@@ -69,6 +76,7 @@ class Mirrorer:
         def mark_to_remove(remote_path):
             files_to_delete.append(remote_path)
 
+        # First, write down every file and directory
         self.conn.walktree(remote_dir, mark_to_remove, mark_to_rmdir, None)
         mark_to_rmdir(remote_dir)
 
@@ -87,6 +95,11 @@ class Mirrorer:
             self.conn.rmdir(remote_dir_path)
 
     def entries_match(self, local_entry, remote_entry):
+        """
+        Compares two dir/file entries to determine if a change is required.
+        Compares file size and modification time
+        :return: True if they are the same
+        """
         if entry_is_dir(remote_entry):
             if local_entry.is_dir():
                 return True
@@ -110,12 +123,24 @@ class Mirrorer:
                     return False
 
     def remote_path_from_local(self, local_path):
+        """
+        Calculates the path on the remote, based on the local path
+        """
         return local_path[len(self.local_base) :]
 
     def local_path_from_remote(self, remote_path):
+        """
+        Calculates the path on your local, based on the remote path
+        """
+        # TODO: Join these
         return self.local_base + remote_path
 
     def load_remote_dir_listing(self, remote_path):
+        """
+        Recursively loads the entire directory and subdirectory listing of a remote dir,
+          and loads the results into the remote_attr_tree
+        :param remote_path: A remote directory path
+        """
         logger.info("Loading remote: {}".format(remote_path))
         remote_listing = self.conn.listdir_attr(remote_path)
         for remote_entry in remote_listing:
@@ -125,6 +150,11 @@ class Mirrorer:
                 self.load_remote_dir_listing(remote_entry_path)
 
     def load_local_dir_listing(self, remote_path):
+        """
+        Recursively loads the entire directory and subdirectory listing of a local dir,
+          and loads the results into the local_attr_tree
+        :param remote_path: A remote directory path
+        """
         logger.info("Loading local: {}".format(remote_path))
         local_path = self.local_base + remote_path
         if isdir(local_path):
@@ -136,6 +166,11 @@ class Mirrorer:
                     self.load_local_dir_listing(child_remote_path)
 
     def load_stat_trees(self):
+        """
+        Completely scans both local and remote directories
+        :return:
+        """
+        # TODO: Add subdirectory loading, but default to "/"
         logger.info("Loading file listings")
         self.remote_attr_tree = OrderedDict()
         self.local_attr_tree = OrderedDict()
@@ -143,6 +178,13 @@ class Mirrorer:
         self.load_local_dir_listing("/")
 
     def action_from_remote_by_path(self, remote_path):
+        """
+        Calculates which SFTP action must be performed in order to mirror a remote
+          dir/file onto the local system
+        :param remote_path: A remote directory path
+        :return: The SFTP action to be performed later
+        :rtype: SFTPAction
+        """
         remote_entry = self.remote_attr_tree[remote_path]
         if remote_path in self.local_attr_tree:
             # Entry exists locally
@@ -184,6 +226,13 @@ class Mirrorer:
                 )
 
     def action_to_remote_by_path(self, remote_path):
+        """
+        Calculates which SFTP action must be performed in order to mirror a local
+          dir/file onto the remote system
+        :param remote_path: A remote directory path
+        :return: The SFTP action to be performed later
+        :rtype: SFTPAction
+        """
         local_entry = self.local_attr_tree[remote_path]
         if remote_path in self.remote_attr_tree:
             # Entry exists remotely
@@ -225,6 +274,14 @@ class Mirrorer:
                 )
 
     def actions_to_mirror_from_remote(self):
+        """
+        Loads entire directory structure for both local and remote sources
+          and determines what SFTP actions will need to be performed to mirror
+          the content of the remote server to the local server
+        :return: A list of SFTPActions
+        :rtype: SFTPActionList
+        """
+        # TODO: Allow subdirectory mirror
         self.load_stat_trees()
         self.action_list = SFTPActionList(self)
         for remote_path in self.remote_attr_tree.keys():
@@ -233,6 +290,14 @@ class Mirrorer:
         return self.action_list
 
     def actions_to_mirror_to_remote(self):
+        """
+        Loads entire directory structure for both local and remote sources
+          and determines what SFTP actions will need to be performed to mirror
+          the content of the local server to the remote server
+        :return: A list of SFTPActions
+        :rtype: SFTPActionList
+        """
+        # TODO: Allow subdirectory mirror
         self.load_stat_trees()
         self.action_list = SFTPActionList(self)
         for remote_path in self.local_attr_tree.keys():
@@ -241,14 +306,35 @@ class Mirrorer:
         return self.action_list
 
     def mirror_from_remote(self, callback=None, dry_run=False):
+        """
+        Mirrors from the remote server to the local server
+        :param callback:
+        :param dry_run:
+        :return:
+        """
+        # TODO: Document params
+        # TODO: Add filter param fn
+        # TODO: Allow sync of subdirectories
         self.actions_to_mirror_from_remote()
         self.action_list.do_actions(callback=callback, dry_run=dry_run)
 
     def mirror_to_remote(self, callback=None, dry_run=False):
+        """
+        Mirrors from the local server to the remote server
+        :param callback:
+        :param dry_run:
+        :return:
+        """
+        # TODO: Document params
+        # TODO: Add filter param fn
+        # TODO: Allow sync of subdirectories
         self.actions_to_mirror_to_remote()
         self.action_list.do_actions(callback=callback, dry_run=dry_run)
 
     def close(self):
+        """
+        Close the SFTP connection socket
+        """
         if self.conn._transport:
             transport = self.conn._transport
             sock = transport.sock
@@ -282,6 +368,8 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
+    # TODO: Add subdirectory mirror
+    # TODO: Add regex filter option
     args = parse_arguments()
     mirrorer = Mirrorer(
         local_base=args.local_base,
@@ -295,5 +383,6 @@ if __name__ == "__main__":
     mirrorer.mirror_from_remote(dry_run=False)
     filtered_stuff = mirrorer.action_list
     for remote_path, action in filtered_stuff:
+        # TODO: Improve UX
         print(action)
     mirrorer.close()
