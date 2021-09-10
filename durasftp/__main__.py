@@ -16,7 +16,7 @@ def main(args):
     auth_args = {}
     if args.private_key is not None:
         auth_args["private_key"] = args.private_key
-    if args.private_key is not None:
+    if args.private_key_pass is not None:
         auth_args["private_key_pass"] = args.private_key_pass
     if args.password is not None:
         auth_args["password"] = args.password
